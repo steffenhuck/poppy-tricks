@@ -1,1 +1,1454 @@
-a dummy page
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Poppy's First Tricks</title>
+<meta name="description" content="Poppy the Ridgeback puppy does all sorts of things by herself. Catch the right moment, say YES!, and teach her to sit, give paw, lie down on cue and roll over.">
+<script data-goatcounter="https://steffenhuck.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --ink:#3f3a4a;
+    --muted:#7d7690;
+    --paper:#fffdf7;
+    --accent:#ff7a59;
+    --good:#4fae57;
+    --bad:#e2483a;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    min-height:100vh; min-height:100dvh;
+    font-family:'Nunito',sans-serif; color:var(--ink);
+    background:linear-gradient(170deg,#e7f6ff 0%,#fff6e4 55%,#eefbe6 100%);
+    display:flex; flex-direction:column; align-items:center;
+    overflow-x:hidden; user-select:none; -webkit-user-select:none;
+  }
+  h1,h2,.btn,.chip,.fred{font-family:'Fredoka',sans-serif;}
+  button{font-family:inherit;}
+
+  /* ---------- overlays ---------- */
+  .overlay{
+    position:fixed; inset:0; z-index:50;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    background:rgba(255,250,240,.88); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+    padding:16px; overflow-y:auto;
+  }
+  .overlay > .card{margin:auto 0;}
+  .stack{margin:auto 0; width:100%; display:flex; flex-direction:column; align-items:center;}
+  .card{
+    background:var(--paper); border-radius:26px; box-shadow:0 18px 50px rgba(100,80,60,.18);
+    padding:24px 22px 22px; max-width:420px; width:100%; text-align:center;
+  }
+  .card h1{margin:4px 0 2px; font-size:40px; font-weight:700; line-height:1.05;}
+  .card h2{margin:4px 0 2px; font-size:28px; font-weight:600; line-height:1.15;}
+  .card p{font-size:16px; line-height:1.5; margin:10px 0;}
+  .card p.small{font-size:14px; color:var(--muted); margin:6px 0;}
+  .hero{display:flex; align-items:flex-end; justify-content:center; gap:0; margin:0 auto 2px;}
+  .hero svg.face{width:132px; height:132px;}
+  .hero svg.pile{width:70px; height:70px; margin-left:-14px; margin-bottom:4px;}
+  .btn{
+    font-size:20px; font-weight:600; color:#fff;
+    background:linear-gradient(135deg,#ffa23f,#ff6b4a); border:none; border-radius:999px;
+    padding:13px 34px; cursor:pointer; box-shadow:0 8px 20px rgba(255,120,70,.35);
+    transition:transform .15s ease; margin:6px 4px 0;
+  }
+  .btn:active{transform:scale(.95);}
+  .btn.secondary{background:#fff; color:var(--ink); box-shadow:0 4px 12px rgba(100,80,60,.14); border:2px solid #eee4d4; font-size:17px; padding:10px 22px;}
+  .btn.small{font-size:15px; padding:8px 16px;}
+
+  .levels{display:flex; flex-direction:column; gap:10px; margin:14px 0 6px;}
+  .lvl{
+    display:flex; align-items:center; gap:14px; text-align:left;
+    background:#fff; border:2px solid #efe6d6; border-radius:18px; padding:12px 14px; cursor:pointer;
+    transition:transform .12s ease, border-color .12s ease, background .12s ease;
+  }
+  .lvl:hover,.lvl:focus-visible{border-color:var(--accent); background:#fff8f2; outline:none;}
+  .lvl:active{transform:scale(.98);}
+  .lvl .badge{width:54px; height:54px; border-radius:16px; flex:0 0 54px; display:flex; align-items:center; justify-content:center; font-family:'Fredoka',sans-serif; font-weight:700; font-size:22px; color:#fff;}
+  .lvl.garden .badge{background:linear-gradient(135deg,#8ad46a,#4fae57);}
+  .lvl.house .badge{background:linear-gradient(135deg,#ffc24f,#ff8f3b);}
+  .lvl.friend .badge{background:linear-gradient(135deg,#ff6f6f,#c23a6a);}
+  .lvl .name{font-family:'Fredoka',sans-serif; font-size:20px; font-weight:600; display:block; line-height:1.1;}
+  .lvl .what{font-size:13.5px; color:var(--muted); display:block; margin-top:3px; line-height:1.35;}
+  .lvl.locked{opacity:.55; cursor:default; filter:grayscale(.8);}
+  .lvl.locked:hover{border-color:#efe6d6; background:#fff;}
+  .lvl.played{cursor:default;}
+  .lvl.played:hover{border-color:#efe6d6; background:#fff;}
+  .lvl .day{font-family:'Nunito',sans-serif; font-weight:700; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); display:block;}
+  .lvl .mini{display:inline-block; margin-top:5px; font-family:'Fredoka',sans-serif; font-weight:600; font-size:12.5px; padding:2px 8px; border-radius:8px; border:2px solid;}
+  .lvl .mini.ok{color:#2f8a3a; border-color:#2f8a3a; transform:rotate(-2deg);}
+  .lvl .mini.no{color:#c8312a; border-color:#c8312a; transform:rotate(-2deg);}
+  .lvl.next{border-color:var(--accent); box-shadow:0 0 0 4px rgba(255,122,89,.15);}
+  .stamp{display:inline-block; margin:6px 0 4px; padding:6px 14px 7px; border:5px solid; border-radius:12px; font-family:'Fredoka',sans-serif; font-weight:700; font-size:clamp(20px,6vw,28px); letter-spacing:.03em; transform:rotate(-5deg); animation:stampIn .5s cubic-bezier(.2,1.6,.4,1);}
+  .stamp.ok{color:#2f8a3a; border-color:#2f8a3a; background:rgba(105,219,124,.12);}
+  .stamp.no{color:#c8312a; border-color:#c8312a; background:rgba(255,107,90,.08);}
+  .stamp.big{font-size:clamp(24px,7.5vw,36px);}
+  @keyframes stampIn{0%{transform:scale(2.4) rotate(-12deg); opacity:0;} 100%{transform:scale(1) rotate(-5deg); opacity:1;}}
+  .bigscore{font-family:'Fredoka',sans-serif; font-weight:700; font-size:54px; line-height:1; margin:10px 0 0; color:var(--accent);}
+  .bigscore small{font-size:18px; color:var(--muted); font-weight:600; margin-left:4px;}
+  .best{font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; color:var(--muted); margin:4px 0 2px;}
+  .best.new{color:#2f8a3a;}
+  details{margin:6px auto 0; max-width:300px; font-size:13px; color:var(--muted);}
+  details summary{cursor:pointer; font-family:'Fredoka',sans-serif; font-weight:600;}
+  .score{width:100%; max-width:300px; margin:8px auto 2px; border-collapse:collapse; font-size:14px;}
+  .score td{padding:3px 4px;}
+  .score td:last-child{text-align:right; font-family:'Fredoka',sans-serif; font-weight:600;}
+  .score tr.neg td:last-child{color:#c8312a;}
+  .score tr.total td{border-top:2px solid #eadfcf; font-size:17px; padding-top:6px;}
+  .mess{display:flex; justify-content:center; gap:14px; flex-wrap:wrap; margin:6px 0 2px;}
+  .mess .col{display:flex; flex-direction:column; align-items:center; font-size:12px; color:var(--muted); min-width:84px;}
+  .mess{align-items:flex-end;}
+  .mess svg{width:84px; height:110px;}
+  .mess .n{font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; color:var(--ink);}
+  .places{display:flex; flex-direction:column; gap:6px; margin:8px auto 4px; max-width:290px;}
+  .place{display:flex; justify-content:space-between; align-items:center; padding:7px 12px; border-radius:12px; font-family:'Fredoka',sans-serif; font-weight:600; font-size:16px;}
+  .place.ok{background:rgba(105,219,124,.18); color:#2f8a3a;}
+  .place.no{background:rgba(255,107,90,.12); color:#c8312a;}
+  .sub{font-size:13px; color:var(--muted); margin:10px 0 0; font-family:'Fredoka',sans-serif; font-weight:600; letter-spacing:.04em; text-transform:uppercase;}
+  .stamps{display:flex; flex-direction:column; align-items:center; gap:2px; margin:8px 0;}
+  .stamps .stamp{font-size:18px; margin:2px 0; animation-duration:.4s;}
+  .dedication{font-family:'Fredoka',sans-serif; font-weight:500; font-size:19px; margin:20px 0 0;}
+  .dedication b{color:var(--accent); font-weight:600;}
+  .rules{text-align:left; font-size:15px; line-height:1.5; margin:12px 0 0; padding-left:0; list-style:none;}
+  .rules li{margin:7px 0; padding-left:28px; position:relative;}
+  .rules li:before{content:"🐾"; position:absolute; left:0; top:0;}
+  .stars{font-size:34px; letter-spacing:.08em; margin:4px 0 0;}
+  .stars .off{opacity:.25;}
+  .stat{display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin:10px 0 4px;}
+  .stat span{background:#f6f0e4; border-radius:12px; padding:6px 10px; font-size:14px;}
+  .stat b{font-family:'Fredoka',sans-serif;}
+
+  /* ---------- game ---------- */
+  #game{display:none; flex-direction:column; align-items:center; width:100%; max-width:560px; padding:10px 12px 6px;}
+  #top{width:100%; display:flex; justify-content:space-between; align-items:center; padding:2px 4px 6px; gap:8px;}
+  #top .title{font-family:'Fredoka',sans-serif; font-size:19px; font-weight:600; line-height:1;}
+  #top .title small{display:block; font-family:'Nunito',sans-serif; font-weight:600; font-size:11px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; margin-top:3px;}
+  .chip{background:#fff; border-radius:999px; padding:5px 12px; font-size:16px; font-weight:600; box-shadow:0 3px 10px rgba(100,80,60,.12); display:flex; align-items:center; gap:6px; white-space:nowrap;}
+  #progressWrap{width:100%; display:flex; align-items:center; gap:8px; padding:0 4px 8px;}
+  #progressWrap .lab{font-family:'Fredoka',sans-serif; font-size:14px; font-weight:600; white-space:nowrap;}
+  #paws{display:flex; gap:6px; flex:1;}
+  .paw{width:32px; height:32px; border-radius:50%; background:#fff; box-shadow:inset 0 0 0 2px #eadfcf; display:flex; align-items:center; justify-content:center; transition:background .3s;}
+  .paw svg{width:20px; height:20px; fill:#e4d9c8;}
+  .paw.on{background:linear-gradient(135deg,#ffcf3f,#ff8a2e); box-shadow:0 3px 8px rgba(255,140,40,.4);}
+  .paw.on svg{fill:#fff;}
+  .paw.pop{animation:pawpop .6s cubic-bezier(.2,1.6,.4,1);}
+  .paw.lost{animation:pawlost .6s ease;}
+  @keyframes pawpop{0%{transform:scale(.3);} 60%{transform:scale(1.35);} 100%{transform:scale(1);}}
+  @keyframes pawlost{0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px); background:#ffb3a8;} 75%{transform:translateX(6px);}}
+  #fastTag{font-family:'Fredoka',sans-serif; font-weight:600; font-size:14px; color:var(--accent);}
+  #shyTag{font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; color:#fff; background:#c8312a; padding:4px 10px; border-radius:999px; white-space:nowrap; animation:throb .6s ease-in-out infinite alternate;}
+  .ahh{
+    position:absolute; z-index:6; pointer-events:none; transform:translate(-50%,-100%) scale(.3); opacity:0;
+    font-family:'Fredoka',sans-serif; font-weight:700; font-size:clamp(18px,5.4vw,28px); color:#3f3a4a;
+    background:#fff; padding:14px 22px; white-space:nowrap;
+    clip-path:polygon(50% 0%,61% 12%,78% 4%,80% 22%,98% 22%,90% 40%,100% 55%,86% 64%,92% 84%,72% 80%,64% 100%,50% 86%,36% 100%,28% 80%,8% 84%,14% 64%,0% 55%,10% 40%,2% 22%,20% 22%,22% 4%,39% 12%);
+    filter:drop-shadow(0 3px 0 #3f3a4a);
+    animation:ahh 1.5s cubic-bezier(.2,1.5,.4,1) forwards;
+  }
+  .ahh.bad{background:#ffe1dc;}
+  @keyframes ahh{0%{opacity:0; transform:translate(-50%,-100%) scale(.3) rotate(-8deg);} 15%{opacity:1; transform:translate(-50%,-100%) scale(1.1) rotate(3deg);} 25%{transform:translate(-50%,-100%) scale(1) rotate(-2deg);} 80%{opacity:1;} 100%{opacity:0; transform:translate(-50%,-130%) scale(1);}}
+  .banner.long{font-size:clamp(19px,5.6vw,34px);}
+  .banner.huge{top:20%; width:86%; font-size:clamp(24px,7vw,44px); padding:14px 16px 16px; animation-duration:3.4s;}
+  #bar{flex:1; height:16px; background:#fff; border-radius:999px; box-shadow:inset 0 1px 3px rgba(0,0,0,.12); overflow:hidden; position:relative;}
+  #barFill{height:100%; width:0%; background:linear-gradient(90deg,#8ad46a,#4fae57); border-radius:999px; transition:width .5s ease, background .3s;}
+  #barFill.down{background:linear-gradient(90deg,#ff9a8a,#e2483a);}
+  #pct{font-family:'Fredoka',sans-serif; font-weight:600; font-size:14px; min-width:40px; text-align:right;}
+
+  #sceneWrap{position:relative; width:100%; border-radius:22px; overflow:hidden; box-shadow:0 14px 34px rgba(60,90,40,.25); background:#cfeafc;}
+  #sceneWrap.shake{animation:shake .45s ease;}
+  @keyframes shake{0%,100%{transform:translate(0,0);} 15%{transform:translate(-9px,3px);} 30%{transform:translate(8px,-4px);} 45%{transform:translate(-7px,2px);} 60%{transform:translate(6px,-2px);} 75%{transform:translate(-3px,1px);}}
+  #scene{display:block; width:100%; height:auto; touch-action:manipulation;}
+  #flash{position:absolute; inset:0; pointer-events:none; opacity:0;}
+  #flash.bad{animation:flashBad .7s ease;}
+  #flash.good{animation:flashGood .9s ease;}
+  @keyframes flashBad{0%{opacity:.0; background:rgba(226,72,58,.0);} 15%{opacity:1; background:rgba(226,72,58,.35);} 100%{opacity:0; background:rgba(226,72,58,0);}}
+  @keyframes flashGood{0%{opacity:0;} 15%{opacity:1; background:radial-gradient(circle at 80% 70%, rgba(255,230,120,.7), rgba(255,230,120,0) 60%);} 100%{opacity:0;}}
+  .banner{
+    position:absolute; left:50%; top:16%; transform:translate(-50%,0) scale(.4); z-index:5; pointer-events:none;
+    font-family:'Fredoka',sans-serif; font-weight:700; font-size:clamp(24px,7.5vw,42px); white-space:normal; text-align:center;
+    width:max-content; max-width:90%; line-height:1.08;
+    color:#fff; padding:6px 20px 8px; border-radius:18px; opacity:0;
+    animation:pop 1.9s cubic-bezier(.2,1.4,.4,1) forwards;
+  }
+  .banner.good{background:linear-gradient(135deg,#ffcf3f,#ff9a2e); box-shadow:0 8px 0 #d9781b, 0 14px 30px rgba(0,0,0,.2); text-shadow:0 2px 0 #c86a10;}
+  .banner.bad{background:linear-gradient(135deg,#ff6b5a,#c8312a); box-shadow:0 8px 0 #8f1f19, 0 14px 30px rgba(0,0,0,.2); text-shadow:0 2px 0 #8f1f19;}
+  .banner.mid{background:linear-gradient(135deg,#8ad46a,#4fae57); box-shadow:0 8px 0 #2f7a36, 0 14px 30px rgba(0,0,0,.2); font-size:clamp(22px,6.5vw,34px);}
+  @keyframes pop{0%{opacity:0; transform:translate(-50%,0) scale(.4) rotate(-6deg);} 12%{opacity:1; transform:translate(-50%,0) scale(1.08) rotate(2deg);} 22%{transform:translate(-50%,0) scale(1) rotate(-1deg);} 80%{opacity:1;} 100%{opacity:0; transform:translate(-50%,-20px) scale(1);}}
+
+  /* svg parts */
+  .pile{cursor:pointer;}
+  .pile.cleaning{animation:cleanAway .5s ease forwards;}
+  @keyframes cleanAway{to{opacity:0; transform:var(--t) scale(.2);}}
+  .stink path{animation:stink 1.6s ease-in-out infinite; opacity:.0;}
+  .stink path:nth-child(2){animation-delay:.5s;} .stink path:nth-child(3){animation-delay:1s;}
+  @keyframes stink{0%{opacity:0; transform:translateY(8px);} 40%{opacity:.9;} 100%{opacity:0; transform:translateY(-22px);}}
+  .fly{animation:fly 1.3s linear infinite;}
+  .fly.f2{animation-duration:1.7s; animation-direction:reverse;}
+  @keyframes fly{from{transform:rotate(0deg);} to{transform:rotate(360deg);}}
+  .rays{animation:spin 6s linear infinite;}
+  .bob{animation:bob .7s ease-in-out infinite alternate;}
+  @keyframes bob{from{transform:translateY(0);} to{transform:translateY(-12px);}}
+  #scene{cursor:pointer;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .zzz{animation:zzz 2.4s ease-in-out infinite; opacity:0;}
+  .zzz:nth-child(2){animation-delay:.8s;} .zzz:nth-child(3){animation-delay:1.6s;}
+  @keyframes zzz{0%{opacity:0; transform:translate(0,0) scale(.6);} 30%{opacity:1;} 100%{opacity:0; transform:translate(16px,-34px) scale(1.2);}}
+
+  /* timeline */
+  #timeline{position:relative; width:100%; height:26px; margin-top:8px; background:#fff; border-radius:999px; box-shadow:0 3px 10px rgba(100,80,60,.1);}
+  #timeline .ev{position:absolute; top:50%; transform:translate(-50%,-50%); font-size:14px; line-height:1;}
+  #timeline .nap{position:absolute; top:5px; bottom:5px; background:#e7e3f6; border-radius:999px;}
+  #timeline .now{position:absolute; top:-3px; bottom:-3px; width:4px; margin-left:-2px; background:var(--accent); border-radius:4px; box-shadow:0 0 0 2px #fff;}
+  #timeline .done{position:absolute; left:0; top:0; bottom:0; background:rgba(255,122,89,.10); border-radius:999px 0 0 999px;}
+
+  /* bubble */
+  #bubble{width:100%; margin-top:10px; display:flex; gap:10px; align-items:flex-start;}
+  #bubble .face{width:46px; height:46px; flex:0 0 46px; border-radius:50%; background:#fff; box-shadow:0 4px 12px rgba(100,80,60,.15); overflow:hidden;}
+  #bubble .face svg{width:100%; height:100%;}
+  #bubble .text{flex:1; background:#fff; border-radius:16px; padding:10px 14px; font-size:15.5px; line-height:1.4; box-shadow:0 4px 12px rgba(100,80,60,.12); position:relative; min-height:46px;}
+  #bubble .text:before{content:""; position:absolute; left:-7px; top:16px; width:14px; height:14px; background:#fff; transform:rotate(45deg); border-radius:3px;}
+  #bubble .text b{color:var(--accent);}
+  #bubble .text i{color:var(--muted);}
+
+  /* controls */
+  #controls{width:100%; display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; align-items:stretch;}
+  #crateBtn{grid-column:1 / -1; flex-direction:row; justify-content:center; gap:8px; padding:9px;}
+  #crateBtn.hidden{display:none;}
+  .ctl{
+    border:none; border-radius:20px; padding:10px 6px; cursor:pointer; font-family:'Fredoka',sans-serif; font-weight:600; font-size:16px;
+    background:#fff; color:var(--ink); box-shadow:0 4px 12px rgba(100,80,60,.14); display:flex; flex-direction:column; align-items:center; gap:2px;
+    transition:transform .1s ease;
+  }
+  .ctl:active{transform:scale(.94);}
+  .ctl small{font-family:'Nunito',sans-serif; font-weight:600; font-size:11px; color:var(--muted);}
+  .ctl.no{color:#fff; font-size:22px; padding:12px 6px 10px; border-radius:24px; background:linear-gradient(135deg,#8c8798,#5f5a6e); box-shadow:0 8px 0 #45414f, 0 12px 24px rgba(60,50,80,.3);}
+  .ctl.no small{color:rgba(255,255,255,.85);}
+  .ctl.no .ico{font-size:26px; line-height:28px; height:28px;}
+  .ctl.hidden{visibility:hidden;}
+  #treatBtn{
+    position:relative; padding:12px 6px 10px; font-size:22px; border-radius:24px;
+    background:linear-gradient(135deg,#ffa23f,#ff6b4a); color:#fff; box-shadow:0 8px 0 #d65a35, 0 12px 24px rgba(255,120,70,.35);
+  }
+  #treatBtn small{color:rgba(255,255,255,.85);}
+  #treatBtn svg{width:44px; height:28px;}
+  #treatBtn.now{animation:throb .45s ease-in-out infinite alternate; background:linear-gradient(135deg,#ffd23f,#ff8a2e);}
+  @keyframes throb{from{transform:scale(1);} to{transform:scale(1.07);}}
+  #treatRing{position:absolute; left:14%; right:14%; top:7px; height:5px; border-radius:5px; background:rgba(255,255,255,.35); pointer-events:none; opacity:0; overflow:hidden;}
+  #treatRing i{display:block; height:100%; width:100%; background:#fff; border-radius:5px;}
+  #treatBtn.now #treatRing{opacity:1;}
+  #controls2{width:100%; display:flex; justify-content:center; gap:8px; margin:14px 0 4px; flex-wrap:wrap;}
+
+  .confetti{position:fixed; top:-12px; z-index:60; width:10px; height:16px; border-radius:2px; pointer-events:none; animation:fall linear forwards;}
+  @keyframes fall{0%{transform:translateY(0) rotate(0);} 100%{transform:translateY(110vh) rotate(720deg);}}
+
+  @media (prefers-reduced-motion: reduce){
+    .confetti,.banner{animation-duration:.01s;}
+    #sceneWrap.shake{animation:none;}
+  }
+  footer{padding:18px 0 22px; font-size:14px;}
+  footer a{color:var(--ink); font-style:italic; text-decoration:none; opacity:.6;}
+  footer a:hover{opacity:1;}
+
+  /* ---------- tricks ---------- */
+  .lvl.k-sit .badge{background:linear-gradient(135deg,#8ad46a,#4fae57);}
+  .lvl.k-paw .badge{background:linear-gradient(135deg,#ffc24f,#ff8f3b);}
+  .lvl.k-down .badge{background:linear-gradient(135deg,#6fc3ff,#3a7bd5);}
+  .lvl.k-roll .badge{background:linear-gradient(135deg,#ff6f6f,#c23a6a);}
+  .lvl.k-show .badge{background:linear-gradient(135deg,#c98bff,#7b4ad5); font-size:24px;}
+  #sceneWrap{container-type:inline-size;}
+  #cloud{
+    position:absolute; left:2.5%; top:4%; width:43%; z-index:3; pointer-events:none;
+    background:#fff; border-radius:28px; padding:2.4% 3% 2.8%;
+    box-shadow:0 4px 0 rgba(63,58,74,.12), 0 8px 18px rgba(60,90,40,.18);
+    font-size:13px; font-size:clamp(7px, 2.2cqw, 13px);
+    transition:opacity .4s ease;
+  }
+  #cloud:before,#cloud:after{content:""; position:absolute; background:#fff; border-radius:50%; box-shadow:0 3px 0 rgba(63,58,74,.12);}
+  #cloud:before{width:7cqw; height:7cqw; right:-5cqw; bottom:-4.5cqw;}
+  #cloud:after{width:4cqw; height:4cqw; right:-9.5cqw; bottom:-9cqw;}
+  #cloud .head{font-family:'Nunito',sans-serif; font-weight:700; font-size:1em; color:var(--muted); letter-spacing:.04em; text-transform:uppercase; margin:0 0 .2em; white-space:nowrap;}
+  #cloud .words{display:flex; flex-wrap:wrap; align-items:baseline; column-gap:.55em; row-gap:0; line-height:1.05;}
+  #cloud .th{font-family:'Fredoka',sans-serif; font-weight:600; color:var(--ink); font-size:calc(var(--s) * 1em); transition:font-size .6s cubic-bezier(.2,1.4,.4,1), color .3s; white-space:nowrap;}
+  #cloud .th.goal{color:var(--accent);}
+  #cloud .th.tiny{opacity:.45;}
+  #cloud.hide{opacity:0;}
+  #cloud.single .words{justify-content:center;}
+  .th.grew{animation:grew .7s cubic-bezier(.2,1.6,.4,1);}
+  @keyframes grew{0%{transform:scale(1);} 40%{transform:scale(1.35);} 100%{transform:scale(1);}}
+  #cueWrap{width:100%; display:flex; align-items:center; gap:8px; padding:0 4px 8px;}
+  #cueWrap .lab{font-family:'Fredoka',sans-serif; font-size:14px; font-weight:600; white-space:nowrap; min-width:58px;}
+  #progressWrap .lab{min-width:58px;}
+  #cues{display:flex; gap:6px; flex:1;}
+  .ring{width:32px; height:32px; border-radius:50%; background:#fff; box-shadow:inset 0 0 0 2px #d5e4f5; display:flex; align-items:center; justify-content:center; font-family:'Fredoka',sans-serif; font-weight:700; font-size:13px; color:#c4d6ea; transition:background .3s;}
+  .ring.on{background:linear-gradient(135deg,#6fc3ff,#3a7bd5); color:#fff; box-shadow:0 3px 8px rgba(58,123,213,.4);}
+  .ring.pop{animation:pawpop .6s cubic-bezier(.2,1.6,.4,1);}
+  .ring.lost{animation:pawlost .6s ease;}
+  #timebar{width:100%; height:10px; margin-top:8px; background:#fff; border-radius:999px; box-shadow:0 3px 10px rgba(100,80,60,.1); overflow:hidden;}
+  #timeFill{display:block; height:100%; width:100%; background:linear-gradient(90deg,#ffcf3f,#ff8a2e); border-radius:999px; transition:width .25s linear;}
+  #treatChip svg{width:30px; height:20px;}
+  #treatChip.low{color:#c8312a; animation:throb .5s ease-in-out infinite alternate;}
+  #trustTag{font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; color:#fff; background:#c8312a; padding:4px 10px; border-radius:999px; white-space:nowrap;}
+  #controls .ctl{min-height:92px; justify-content:center;}
+  #yesBtn{
+    position:relative; padding:12px 6px 10px; font-size:26px; border-radius:24px;
+    background:linear-gradient(135deg,#ffa23f,#ff6b4a); color:#fff; box-shadow:0 8px 0 #d65a35, 0 12px 24px rgba(255,120,70,.35);
+  }
+  #yesBtn small{color:rgba(255,255,255,.88);}
+  #yesBtn svg{width:44px; height:28px;}
+  #yesBtn.now{animation:throb .45s ease-in-out infinite alternate; background:linear-gradient(135deg,#ffd23f,#ff8a2e);}
+  .ctl.no{font-size:17px; line-height:1.1;}
+  .ctl.no .lab2{display:block; max-width:9em;}
+  #cueBtn{grid-column:1 / -1; flex-direction:row; justify-content:center; gap:10px; min-height:0 !important; padding:12px; font-size:21px; color:#fff; border-radius:22px;
+    background:linear-gradient(135deg,#6fc3ff,#3a7bd5); box-shadow:0 6px 0 #2a5ea8, 0 10px 20px rgba(58,123,213,.3);}
+  #cueBtn small{color:rgba(255,255,255,.85); font-size:12px;}
+  #cueBtn.hidden{display:none;}
+  #cueBtn.now{animation:throb .45s ease-in-out infinite alternate;}
+  #showCtl{width:100%; display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;}
+  #showCtl.hidden{display:none;}
+  #showCtl button{min-height:64px; font-size:22px; color:#fff; border-radius:22px; background:linear-gradient(135deg,#c98bff,#7b4ad5); box-shadow:0 6px 0 #5a3299, 0 10px 20px rgba(123,74,213,.3);}
+  #showCtl button:disabled{opacity:.35; box-shadow:none;}
+  .crowd.cheer .fan{animation:cheer .35s ease-in-out 6 alternate;}
+  .crowd.aww .fan{animation:aww 1.6s ease-in-out;}
+  @keyframes cheer{from{transform:translateY(0);} to{transform:translateY(-16px);}}
+  @keyframes aww{0%,100%{transform:rotate(0);} 30%,70%{transform:rotate(-8deg);}}
+  .heart{animation:heart 1.8s ease-out forwards; opacity:0;}
+  @keyframes heart{0%{opacity:0; transform:translateY(0) scale(.5);} 20%{opacity:1;} 100%{opacity:0; transform:translateY(-140px) scale(1.2);}}
+  .tricklist{display:flex; flex-direction:column; gap:6px; margin:8px auto 4px; max-width:290px;}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="poppyFace">
+      <ellipse cx="22" cy="52" rx="13" ry="18" fill="#9c6128" transform="rotate(14 22 52)"/>
+      <ellipse cx="78" cy="52" rx="13" ry="18" fill="#9c6128" transform="rotate(-14 78 52)"/>
+      <ellipse cx="50" cy="52" rx="30" ry="32" fill="#c98a45"/>
+      <ellipse cx="50" cy="66" rx="17" ry="14" fill="#5a3b1e"/>
+      <ellipse cx="50" cy="60" rx="8" ry="6" fill="#1d1612"/>
+      <ellipse cx="47.5" cy="58.5" rx="2" ry="1.2" fill="#fff" opacity=".6"/>
+      <circle cx="38" cy="44" r="4" fill="#1d1612"/><circle cx="62" cy="44" r="4" fill="#1d1612"/>
+      <circle cx="39.5" cy="42.8" r="1.3" fill="#fff"/><circle cx="63.5" cy="42.8" r="1.3" fill="#fff"/>
+      <path d="M42 75 Q50 81 58 75" fill="none" stroke="#1d1612" stroke-width="2.2" stroke-linecap="round"/>
+    </g>
+    <g id="poop">
+      <ellipse cx="0" cy="1" rx="50" ry="8" fill="rgba(40,25,10,.25)"/>
+      <ellipse cx="0" cy="-15" rx="48" ry="17" fill="#7b4a1e" stroke="#47280c" stroke-width="4"/>
+      <ellipse cx="3" cy="-37" rx="36" ry="15" fill="#7b4a1e" stroke="#47280c" stroke-width="4"/>
+      <ellipse cx="6" cy="-57" rx="24" ry="12" fill="#7b4a1e" stroke="#47280c" stroke-width="4"/>
+      <path d="M6 -66 C 4 -78, 16 -82, 18 -92 C 26 -84, 24 -72, 14 -66 Z" fill="#7b4a1e" stroke="#47280c" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M-34 -20 Q -20 -28 -6 -26" stroke="#a8703a" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M-18 -42 Q -8 -48 4 -47" stroke="#a8703a" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+      <path d="M-4 -61 Q 2 -65 8 -65" stroke="#a8703a" stroke-width="4" fill="none" stroke-linecap="round"/>
+    </g>
+    <g id="puddle">
+      <path d="M-66 2 C -72 -10, -44 -18, -20 -14 C 0 -22, 44 -20, 60 -10 C 74 -2, 56 10, 24 9 C 6 14, -30 14, -44 10 C -58 12, -64 8, -66 2 Z" fill="#f4c21e" stroke="#b8860b" stroke-width="3.5"/>
+      <ellipse cx="-18" cy="-6" rx="20" ry="3.5" fill="#fff3b0" opacity=".9"/><ellipse cx="26" cy="-2" rx="10" ry="2.2" fill="#fff3b0" opacity=".8"/>
+      <circle cx="-74" cy="-4" r="4" fill="#f4c21e" stroke="#b8860b" stroke-width="2"/><circle cx="72" cy="2" r="3" fill="#f4c21e" stroke="#b8860b" stroke-width="2"/>
+    </g>
+    <g id="bone">
+      <path d="M22 36 a10 10 0 1 1 10 -14 l36 0 a10 10 0 1 1 10 14 a10 10 0 1 1 -10 14 l-36 0 a10 10 0 1 1 -10 -14 z" fill="#ffe4b3" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
+    </g>
+    <g id="tulip">
+      <path d="M50 92 V56" stroke="#4f9a3e" stroke-width="5" stroke-linecap="round"/>
+      <path d="M50 72 q-14 -2 -16 -16 q12 2 16 16 z" fill="#4f9a3e"/>
+      <path d="M36 44 q0 -22 14 -22 q14 0 14 22 q0 14 -14 14 q-14 0 -14 -14 z" fill="#ff7a9e"/>
+    </g>
+    <g id="daisy">
+      <g fill="#fff">
+        <ellipse cx="50" cy="38" rx="6" ry="11"/><ellipse cx="50" cy="62" rx="6" ry="11"/>
+        <ellipse cx="38" cy="50" rx="11" ry="6"/><ellipse cx="62" cy="50" rx="11" ry="6"/>
+      </g>
+      <circle cx="50" cy="50" r="8" fill="#ffd43b"/>
+    </g>
+  </defs>
+</svg>
+
+
+
+<!-- ===== landing ===== -->
+<div class="overlay" id="landing">
+  <div class="stack">
+  <div class="card">
+    <div class="hero">
+      <svg class="face" viewBox="0 0 100 100" aria-hidden="true"><use href="#poppyFace"/></svg>
+      <svg class="pile" viewBox="10 0 80 72" aria-hidden="true" style="width:64px;height:58px;margin-left:-10px;margin-bottom:8px"><use href="#bone" style="--x:0"/></svg>
+    </div>
+    <h1>Poppy's First Tricks</h1>
+    <p>Poppy does all sorts of things by herself. She sniffs, she barks, she spins, she jumps. And every now and then, she <b>sits</b>.</p>
+    <p>That's your moment: press <b>YES!</b> She gets a treat, and she'll do it more often. Her <b>thought cloud</b> shows what's on her mind: the bigger the word, the more likely she does it next.</p>
+
+    <h2 style="font-size:22px;margin:16px 0 0">Poppy's tricks</h2>
+    <p class="small" style="margin-top:2px">Four tricks, in order, then a show. What she learns, and every bad habit you teach her, comes with her.</p>
+    <div class="levels" id="stageCards"></div>
+    <div id="runBtns"></div>
+    <button class="btn secondary small" id="helpBtn1">How puppies learn tricks</button>
+
+    <p class="dedication">For <b>Poppy</b>, who arrives in December</p>
+    <p class="small">A Rhodesian Ridgeback. She's clever. Mostly.</p>
+  </div>
+  <footer><a href="https://steffenhuck.github.io/">steffen huck</a></footer>
+  </div>
+</div>
+
+<!-- ===== help ===== -->
+<div class="overlay" id="helpPanel" style="display:none;">
+  <div class="card">
+    <h2>How puppies learn tricks</h2>
+    <ul class="rules">
+      <li><b>Wait for it.</b> You can't tell a puppy what to do. Poppy tries things all by herself. When she does the trick, press <b>YES!</b> straight away.</li>
+      <li><b>The treat goes to whatever she's doing right now.</b> A treat while she barks teaches her to bark. A treat after she's stopped is only half a lesson.</li>
+      <li><b>What pays, grows.</b> Watch her thought cloud: rewarded ideas get bigger, ignored ones shrink.</li>
+      <li><b>One thing leads to another.</b> A paw only comes after a sit. A roll only comes after lying on her side.</li>
+      <li><b>Hold back to get more.</b> Once she knows a step, stop rewarding it. She'll try harder, and do a bit more.</li>
+      <li><b>Words come last.</b> Say "Down!" just as she lies down, then YES! Do it a few times and the word means something.</li>
+      <li><b>The old way: push her into it.</b> She ends up sitting, but she learns nothing, and she trusts you a little less.</li>
+    </ul>
+    <p class="small">Each well-timed YES! for the trick fills a paw at the top. Fill them all and she's learned it. Treats are limited, and so is time: about two minutes per trick.</p>
+    <button class="btn" id="helpClose">Got it</button>
+  </div>
+</div>
+
+<!-- ===== ending ===== -->
+<div class="overlay" id="ending" style="display:none;">
+  <div class="card">
+    <div class="hero"><svg class="face" viewBox="0 0 100 100" aria-hidden="true"><use href="#poppyFace"/></svg></div>
+    <p class="small" id="endDay" style="margin:0"></p>
+    <h2 id="endTitle"></h2>
+    <div id="endStamp"></div>
+    <p id="endText"></p>
+    <div id="endScore"></div>
+    <div><button class="btn" id="nextBtn">Next</button></div>
+    <div><button class="btn secondary small" id="newRunBtn2">Start again from trick 1</button></div>
+  </div>
+</div>
+
+<!-- ===== game ===== -->
+<div id="game">
+  <div id="top">
+    <div class="title">Poppy's First Tricks<small id="levelName">Trick 1 · Sit</small></div>
+    <div class="chip" id="treatChip"><svg viewBox="10 0 80 72"><use href="#bone"/></svg><span id="treatN">12</span></div>
+  </div>
+  <div id="progressWrap">
+    <span class="lab" id="pawLab">Sit</span>
+    <div id="paws"></div>
+    <span id="trustTag" style="display:none">😟 wary</span>
+  </div>
+  <div id="cueWrap" style="display:none">
+    <span class="lab">"Down!"</span>
+    <div id="cues"></div>
+  </div>
+  <div id="sceneWrap">
+    <svg id="scene" viewBox="0 0 800 420" aria-label="Poppy in the garden"></svg>
+    <div id="cloud"><div class="head">Poppy's thinking of…</div><div class="words" id="words"></div></div>
+    <div id="flash"></div>
+  </div>
+  <div id="timebar"><i id="timeFill"></i></div>
+  <div id="bubble">
+    <div class="face"><svg viewBox="0 0 100 100"><use href="#poppyFace"/></svg></div>
+    <div class="text" id="say"></div>
+  </div>
+  <div id="controls">
+    <button class="ctl no" id="forceBtn"><span class="ico">✋</span><span class="lab2" id="forceLab">Push her bum down</span><small>old school</small></button>
+    <button class="ctl" id="yesBtn"><svg viewBox="10 0 80 72"><use href="#bone"/></svg>YES!<small>gives a treat</small></button>
+    <button class="ctl" id="cueBtn">Say "Down!"<small>the word</small></button>
+  </div>
+  <div id="showCtl" class="hidden">
+    <button class="ctl" data-t="sit">Sit!</button>
+    <button class="ctl" data-t="paw">Paw!</button>
+    <button class="ctl" data-t="down">Down!</button>
+    <button class="ctl" data-t="roll">Roll over!</button>
+  </div>
+  <div id="controls2">
+    <button class="btn secondary small" id="helpBtn2">How puppies learn tricks</button>
+    <button class="btn secondary small" id="soundBtn">Sound: on</button>
+    <button class="btn secondary small" id="newRunBtn">Start again</button>
+  </div>
+  <footer><a href="https://steffenhuck.github.io/">steffen huck</a></footer>
+</div>
+
+<script>
+/*ENGINE-START*/
+// Poppy offers behaviours by herself, weighted by what has paid off before.
+// A treat goes to whatever she is doing right now (or just finished).
+const BASE = ['sniff','sit','spin','bark','jump','down'];      // offered spontaneously
+const TRICKS = ['sniff','sit','paw','spin','bark','jump','down','side','roll'];
+const DUR = {idle:1, sniff:2.0, sit:2.3, paw:1.6, spin:1.6, bark:1.5, jump:1.3, pre:1.0, down:2.4, side:2.0, roll:1.5, eat:0.9, forced:1.7, wait:6};
+const LATE = 0.6;          // seconds after a behaviour ends that a treat still (half) counts
+const FLOOR = 0.6;         // weights never decay below this
+const LEVELS = {
+  sit:  {key:'sit',  name:'Sit',      target:'sit',  need:4, treats:12, time:90,  cloud:'full', steps:[],              force:'Push her bum down', forcePose:'sit'},
+  paw:  {key:'paw',  name:'Give paw', target:'paw',  need:4, treats:14, time:110, cloud:'full', steps:['sit'],         force:'Grab her paw',      forcePose:'paw'},
+  down: {key:'down', name:'Down!',    target:'down', need:4, cue:3, treats:16, time:110, cloud:'top', steps:[],      force:'Push her down',     forcePose:'down'},
+  roll: {key:'roll', name:'Roll over',target:'roll', need:2, treats:22, time:120, cloud:'none', steps:['down','side'], force:'Roll her over',  forcePose:'roll'},
+  show: {key:'show', name:'The show', show:true, treats:0, time:9999, cloud:'none', steps:[]}
+};
+const LEVEL_ORDER = ['sit','paw','down','roll'];
+
+function mulberry(seed){ let a = seed >>> 0; return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+function startW(){ return {sniff:2.2, sit:1.4, spin:1.0, bark:1.0, jump:1.1, down:0.9}; }
+
+function makeGame(key, seed, carry){
+  carry = carry || {};
+  const L = LEVELS[key];
+  const g = {
+    key, L, rand: mulberry(seed || 1), t: 0, over: false, won: false, learned: false, why: '',
+    w: carry.w ? Object.assign({}, carry.w) : startW(),
+    pPaw: carry.pPaw != null ? carry.pPaw : 0.2,
+    pSide: carry.pSide != null ? carry.pSide : 0.35,
+    pRoll: carry.pRoll != null ? carry.pRoll : 0.1,
+    trust: carry.trust != null ? carry.trust : 3,
+    known: Object.assign({}, carry.known || {}),     // tricks learned in earlier stages (for the show)
+    treats: L.treats, paws: 0, assoc: 0,
+    cur: {b: 'idle', t: 0, dur: 1.4}, prev: null, queue: [],
+    recent: null, sideRewarded: 0, cuedThis: false,
+    demo: 0, demoWait: false,
+    events: [],
+    stats: {perfect: 0, late: 0, wrong: 0, step: 0, force: 0, cueGood: 0, cueBad: 0, confused: 0, burst: 0}
+  };
+  // a new trick, a new session: she still offers its first step now and then
+  const first = {sit: 'sit', paw: 'sit', down: 'down', roll: 'down'}[key];
+  if (first) g.w[first] = Math.max(g.w[first], 1.4);
+  return g;
+}
+
+// how likely each behaviour is next (for the thought cloud)
+function thoughts(g){
+  let s = 0; for (const b of BASE) s += g.w[b];
+  const p = {}; for (const b of BASE) p[b] = g.w[b]/s;
+  p.paw = p.sit * g.pPaw; p.side = p.down * g.pSide; p.roll = p.side * g.pRoll;
+  return TRICKS.map(b => ({b, p: p[b]})).sort((a, c) => c.p - a.p);
+}
+function topHabit(g, not){
+  let best = 'sniff', bw = -1;
+  for (const b of BASE) if (b !== not && g.w[b] > bw){ bw = g.w[b]; best = b; }
+  return best;
+}
+
+function setCur(g, b, dur){
+  g.cur = {b, t: 0, dur: dur != null ? dur : DUR[b], rewarded: false};
+  if (b === 'pre') g.cuedThis = false;
+  if (TRICKS.includes(b) || b === 'pre') g.events.push({type: 'offer', b});
+}
+function gap(g){ return (0.35 + g.rand()*0.6) * (1 + (3 - g.trust)*0.6); }
+function chooseBase(g){
+  const w = Object.assign({}, g.w);
+  if (g.recent){ w[g.recent] += 3; g.recent = null; }
+  let s = 0; for (const b of BASE) s += w[b];
+  let r = g.rand()*s;
+  for (const b of BASE){ r -= w[b]; if (r <= 0) return b; }
+  return 'sniff';
+}
+
+function endBehaviour(g){
+  const c = g.cur, b = c.b;
+  if (TRICKS.includes(b)){
+    if (!c.rewarded && !c.demo){
+      if (BASE.includes(b)) g.w[b] = Math.max(FLOOR, g.w[b]*0.95);
+      // she knows lying on her side pays; now it doesn't. She tries harder.
+      if (b === 'side' && g.sideRewarded >= 2 && g.L.key === 'roll' && !g.learned){
+        g.pRoll = Math.min(0.75, g.pRoll + 0.2); g.stats.burst++; g.events.push({type: 'burst', b});
+      }
+      if (b === 'sit' && g.w.sit >= 2.5 && g.L.key === 'paw' && !g.learned){
+        g.pPaw = Math.min(0.7, g.pPaw + 0.07); g.stats.burst++; g.events.push({type: 'burst', b});
+      }
+    }
+    g.prev = {b, end: g.t, rewarded: c.rewarded, cued: b === 'down' ? g.cuedThis : false, demo: c.demo};
+  }
+  if (c.demo && c.last){ demoDone(g); return; }
+  // a chain continues: sit → paw, lying down → side → roll
+  if (g.queue.length){ const n = g.queue.shift(); setCur(g, n.b); g.cur.demo = true; g.cur.last = n.last; return; }
+  if (!c.forced && !c.rewarded){
+    if (b === 'sit' && g.rand() < g.pPaw) return setCur(g, 'paw');
+    if (b === 'down' && g.rand() < g.pSide) return setCur(g, 'side');
+    if (b === 'side' && g.rand() < g.pRoll) return setCur(g, 'roll');
+  }
+  if (b === 'pre') return setCur(g, 'down');
+  if (b === 'idle' || b === 'wait'){
+    if (g.L.show) return setCur(g, 'wait', 99);
+    if (g.demoWait){ return demoStart(g); }
+    const n = chooseBase(g);
+    return setCur(g, n === 'down' ? 'pre' : n);
+  }
+  if (b === 'eat' && g.treats <= 0 && !g.learned && !g.L.show){ g.over = true; g.why = 'treats'; g.events.push({type: 'outOfTreats'}); return; }
+  if (b === 'eat' && g.demo > 0){
+    if (g.L.cue){ g.demoWait = true; return setCur(g, 'wait', 6); }
+    return demoStart(g);
+  }
+  setCur(g, 'idle', gap(g));
+}
+
+function step(g, dt){
+  if (g.over) return;
+  g.t += dt;
+  g.cur.t += dt;
+  if (!g.learned && !g.L.show && g.t >= g.L.time){ g.over = true; g.why = 'time'; g.events.push({type: 'timeup'}); return; }
+  if (g.cur.t >= g.cur.dur) endBehaviour(g);
+}
+
+// ---- the learned moment: she shows it off, twice ----
+const CHAIN = {sit: ['sit'], paw: ['sit','paw'], down: ['pre','down'], roll: ['pre','down','side','roll'], spin:['spin'], bark:['bark'], jump:['jump'], sniff:['sniff']};
+function queueChain(g, trick, demo){
+  const ch = CHAIN[trick];
+  g.queue = ch.slice(1).map((b, i) => ({b, last: i === ch.length - 2}));
+  setCur(g, ch[0]); g.cur.demo = demo; g.cur.last = ch.length === 1;
+}
+function demoStart(g){ g.demoWait = false; queueChain(g, g.L.target, true); }
+function demoDone(g){
+  g.events.push({type: 'demoReward', b: g.L.target});
+  g.demo--;
+  setCur(g, 'eat');
+  if (g.demo <= 0){ g.over = true; g.won = true; g.why = 'learned'; g.events.push({type: 'win'}); }
+}
+
+// ---- the player's buttons ----
+function reward(g){
+  if (g.over || g.L.show) return;
+  const c = g.cur;
+  if (g.learned){ g.events.push({type: 'watch'}); return; }
+  if (c.b === 'eat'){ g.events.push({type: 'munching'}); return; }
+  if (g.treats <= 0){ g.events.push({type: 'noTreats'}); return; }
+  g.treats--;
+  let b = null, q = null;
+  if (c.forced){ q = 'forced'; }
+  else if (TRICKS.includes(c.b) && !c.rewarded){ b = c.b; q = 'perfect'; c.rewarded = true; }
+  else if (g.prev && !g.prev.rewarded && !g.prev.demo && g.t - g.prev.end <= LATE){ b = g.prev.b; q = 'late'; g.prev.rewarded = true; }
+  else if (c.b === 'pre'){ q = 'early'; }
+  else q = 'nothing';
+  const ev = {type: 'reward', q, b, target: b === g.L.target, step: g.L.steps.includes(b)};
+  if (b){
+    const a = q === 'perfect' ? 1 : 0.5;
+    if (BASE.includes(b)){ g.w[b] += 1.2*a; g.recent = b; }
+    if (b === 'paw'){ g.pPaw = Math.min(0.85, g.pPaw + 0.15*a); g.w.sit += 0.3*a; g.recent = 'sit'; }
+    if (b === 'side'){ g.pSide = Math.min(0.85, g.pSide + 0.15*a); g.w.down += 0.3*a; g.recent = 'down'; g.sideRewarded++; }
+    if (b === 'roll'){ g.pRoll = Math.min(0.85, g.pRoll + 0.2*a); g.pSide = Math.min(0.85, g.pSide + 0.05); g.w.down += 0.3*a; g.recent = 'down'; }
+    if (b === 'down' && g.L.key === 'roll'){ g.pSide = Math.min(0.85, g.pSide + 0.03*a); }
+    g.trust = Math.min(3, g.trust + 0.15);
+    if (q === 'perfect') g.stats.perfect++; else g.stats.late++;
+    if (ev.target){
+      if (q === 'perfect' && g.paws < g.L.need){ g.paws++; ev.paw = g.paws; }
+      if (g.L.cue && (q === 'perfect' ? g.cuedThis : g.prev && g.prev.cued) && g.assoc < g.L.cue){ g.assoc++; ev.cue = g.assoc; g.stats.cueGood++; }
+    } else if (ev.step) g.stats.step++;
+    else g.stats.wrong++;
+  } else g.stats.confused++;
+  g.events.push(ev);
+  setCur(g, 'eat');
+  if (b && ev.target && g.paws >= g.L.need && (!g.L.cue || g.assoc >= g.L.cue)){
+    g.learned = true; g.demo = 2; g.known[g.L.target] = true;
+    g.stats.learnedAt = g.t;
+    g.events.push({type: 'learned'});
+  }
+}
+
+// say "Down!" (stage 3)
+function cue(g){
+  if (g.over || !g.L.cue) return;
+  const c = g.cur;
+  if (g.learned){
+    if (g.demoWait && c.b === 'wait'){ g.events.push({type: 'obey'}); demoStart(g); }
+    else g.events.push({type: 'watch'});
+    return;
+  }
+  if (c.b === 'pre' || (c.b === 'down' && c.t < 0.8)){
+    if (!g.cuedThis){ g.cuedThis = true; g.events.push({type: 'cueOk'}); }
+    return;
+  }
+  g.stats.cueBad++;
+  const lost = g.assoc > 0;
+  if (lost) g.assoc--;
+  g.events.push({type: 'cueBad', lost, b: c.b});
+}
+
+// the old way: push her into position
+function force(g){
+  if (g.over || g.L.show || g.learned) return;
+  const c = g.cur;
+  if (c.b === 'eat' || c.forced) return;
+  g.stats.force++;
+  g.trust = Math.max(0, g.trust - 1);
+  const parent = g.L.target === 'paw' ? 'sit' : g.L.target === 'roll' ? 'down' : g.L.target;
+  g.w[parent] = Math.max(FLOOR, g.w[parent]*0.85);
+  g.queue = [];
+  setCur(g, 'forced'); g.cur.forced = true; g.cur.pose = g.L.forcePose;
+  g.events.push({type: 'force'});
+}
+
+// the show: you call a trick; she does it if she knows it
+function command(g, trick){
+  if (!g.L.show || g.cur.b !== 'wait') return false;
+  const ok = !!g.known[trick];
+  const b = ok ? trick : topHabit(g, trick);
+  queueChain(g, b, true);
+  g.showing = {trick, ok, b};
+  return true;
+}
+function showStep(g, dt){
+  // like step, but a finished chain returns her to waiting
+  g.t += dt; g.cur.t += dt;
+  if (g.cur.t < g.cur.dur) return;
+  if (g.queue.length){ const n = g.queue.shift(); setCur(g, n.b); g.cur.demo = true; g.cur.last = n.last; return; }
+  if (g.cur.demo && g.showing){ g.events.push({type: 'performed', trick: g.showing.trick, ok: g.showing.ok, b: g.showing.b}); g.showing = null; }
+  setCur(g, 'wait', 99);
+}
+
+function stageScore(g){
+  const s = g.stats, lines = [];
+  lines.push(['Well-timed YES! for the trick', g.paws*100]);
+  if (g.L.cue) lines.push(['"Down!" at the right moment', g.assoc*60]);
+  if (g.learned) lines.push(['She learned it', 300]);
+  if (g.learned && g.treats) lines.push([`Treats left over (${g.treats})`, g.treats*40]);
+  if (s.wrong) lines.push([`Treats for the wrong thing (${s.wrong})`, -40*s.wrong]);
+  if (s.confused) lines.push([`Treats for nothing (${s.confused})`, -20*s.confused]);
+  if (s.cueBad) lines.push([`"Down!" at the wrong moment (${s.cueBad})`, -30*s.cueBad]);
+  if (s.force) lines.push([`Pushed her (${s.force})`, -100*s.force]);
+  const total = Math.max(0, lines.reduce((a, l) => a + l[1], 0));
+  return {total, lines};
+}
+function carryOut(g){
+  return {w: Object.assign({}, g.w), pPaw: g.pPaw, pSide: g.pSide, pRoll: g.pRoll, trust: Math.min(3, g.trust + 1), known: Object.assign({}, g.known)};
+}
+/*ENGINE-END*/
+
+
+// ---------- UI ----------
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const GY = 356, S = 1.36, X0 = 515;
+  const landing = $('landing'), ending = $('ending'), helpPanel = $('helpPanel'), gameEl = $('game');
+  const scene = $('scene'), sayEl = $('say');
+  let g = null, raf = 0, last = 0, tt = 0, P = {}, tipCount = {};
+  let sound = true;
+  try { sound = localStorage.getItem('pt-sound') !== 'off'; } catch(e){}
+
+  // ---------- sound ----------
+  let ac = null, master = null;
+  function actx(){
+    if (!ac){
+      try {
+        ac = new (window.AudioContext || window.webkitAudioContext)();
+        master = ac.createGain(); master.gain.value = 0.9;
+        // a little room: dry signal plus a short, soft reverb made from decaying noise
+        const rev = ac.createConvolver(), len = Math.floor(ac.sampleRate * 1.6), ir = ac.createBuffer(2, len, ac.sampleRate);
+        for (let c = 0; c < 2; c++){ const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random()*2 - 1) * Math.pow(1 - i/len, 3); }
+        rev.buffer = ir;
+        const wet = ac.createGain(); wet.gain.value = 0.28;
+        master.connect(ac.destination); master.connect(rev); rev.connect(wet); wet.connect(ac.destination);
+      } catch(e){ ac = null; }
+    }
+    return ac;
+  }
+  function tone(f, d, type, when, vol, f2){
+    if (!sound) return; const a = actx(); if (!a) return;
+    if (a.state === 'suspended') a.resume();
+    const o = a.createOscillator(), gn = a.createGain(), t0 = a.currentTime + 0.01 + (when || 0);
+    const v = Math.min(1, (vol || 0.2) * 2.2);
+    o.type = type || 'triangle'; o.frequency.setValueAtTime(f, t0);
+    if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + d);
+    gn.gain.setValueAtTime(0.0001, t0); gn.gain.exponentialRampToValueAtTime(v, t0 + 0.015);
+    gn.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+    o.connect(gn); gn.connect(master); o.start(t0); o.stop(t0 + d + 0.05);
+  }
+  // a chord: each note is two slightly detuned triangles and a sine, through a gentle low-pass filter
+  function chord(freqs, opts){
+    if (!sound) return; const a = actx(); if (!a) return;
+    if (a.state === 'suspended') a.resume();
+    const o = Object.assign({when: 0, dur: 1.6, vol: 0.12, attack: 0.03, strum: 0, cutoff: 2600, bend: 0}, opts || {});
+    const t0 = a.currentTime + 0.02 + o.when;
+    const f = a.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = o.cutoff; f.Q.value = 0.7; f.connect(master);
+    freqs.forEach((fr, i) => {
+      const ts = t0 + i*o.strum;
+      [[-6,'triangle',1], [6,'triangle',1], [0,'sine',0.8]].forEach(([det, type, w]) => {
+        const osc = a.createOscillator(), gn = a.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(fr, ts); osc.detune.value = det;
+        if (o.bend) osc.frequency.exponentialRampToValueAtTime(fr * Math.pow(2, o.bend/12), ts + o.dur*0.8);
+        const v = o.vol * w / Math.sqrt(freqs.length);
+        gn.gain.setValueAtTime(0.0001, ts); gn.gain.exponentialRampToValueAtTime(v, ts + o.attack);
+        gn.gain.exponentialRampToValueAtTime(v*0.6, ts + o.dur*0.35); gn.gain.exponentialRampToValueAtTime(0.0001, ts + o.dur);
+        osc.connect(gn); gn.connect(f); osc.start(ts); osc.stop(ts + o.dur + 0.05);
+      });
+    });
+  }
+  const N = n => 440 * Math.pow(2, (n - 69)/12);   // MIDI note number to frequency
+  let noiseBuf = null;
+  function noise(d, when, vol, f0, f1, q){
+    if (!sound) return; const a = actx(); if (!a) return;
+    if (!noiseBuf){ noiseBuf = a.createBuffer(1, a.sampleRate, a.sampleRate); const ch = noiseBuf.getChannelData(0); for (let i = 0; i < ch.length; i++) ch[i] = Math.random()*2 - 1; }
+    const src = a.createBufferSource(), f = a.createBiquadFilter(), gn = a.createGain(), t0 = a.currentTime + 0.01 + (when || 0);
+    src.buffer = noiseBuf; f.type = 'bandpass'; f.Q.value = q || 1.2;
+    f.frequency.setValueAtTime(f0, t0); if (f1) f.frequency.exponentialRampToValueAtTime(f1, t0 + d);
+    const v = Math.min(1, (vol || 0.3) * 2.2);
+    gn.gain.setValueAtTime(0.0001, t0); gn.gain.exponentialRampToValueAtTime(v, t0 + 0.01); gn.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+    src.connect(f); f.connect(gn); gn.connect(master); src.start(t0); src.stop(t0 + d + 0.05);
+  }
+  const SFX = {
+    win(){ chord([N(53),N(57),N(60),N(64)], {dur: .9, vol: .16, strum: .03}); chord([N(55),N(59),N(62),N(65)], {when: .45, dur: .9, vol: .16, strum: .03}); chord([N(48),N(60),N(64),N(67),N(71),N(76)], {when: .9, dur: 2.6, vol: .2, strum: .05}); },
+    // right spot: a warm, open major chord (C major 9), gently strummed upwards, with a sparkle on top
+    goodChord(){ chord([N(48),N(55),N(64),N(67),N(71),N(74)], {dur: 2.2, vol: .2, strum: .045, cutoff: 3200}); [N(88),N(91),N(95)].forEach((f,i) => tone(f, .35, 'sine', .35 + i*.08, .05)); },
+    // wrong spot: a sour cluster that sags downwards
+    badChord(){ chord([N(42),N(48),N(49),N(54),N(55),N(61)], {dur: 1.8, vol: .2, attack: .01, cutoff: 1500, bend: -2}); },
+    // the same spot again: lower, darker, sagging further
+    worseChord(){ chord([N(30),N(36),N(37),N(42),N(43),N(48)], {dur: 2.2, vol: .24, attack: .01, cutoff: 1100, bend: -4}); },
+    learned(){ [392,523,659,784,1047].forEach((f,i) => tone(f, .25, 'square', i*.12, .12)); [1047,1319,1568].forEach((f,i) => tone(f, .6, 'triangle', .65 + i*.04, .14)); },
+    lesson(){ [784,988,1319].forEach((f,i) => tone(f, .16, 'triangle', i*.07, .2)); },
+    lostLesson(){ tone(523,.2,'triangle',0,.18,392); tone(392,.3,'triangle',.18,.18,262); },
+    perfect(){ [784,988,1175,1568].forEach((f,i) => tone(f, .14, 'triangle', i*.06, .18)); },
+    good(){ [659,784].forEach((f,i) => tone(f, .16, 'triangle', i*.08, .18)); },
+    bad(){ tone(392,.3,'sawtooth',.25,.13,330); tone(330,.3,'sawtooth',.55,.13,262); tone(262,.6,'sawtooth',.85,.13,196); },
+    // she relieves herself
+    plop(){ noise(.12, 0, .35, 300, 120, 2); tone(260,.22,'sine',0.02,.4,70); tone(180,.25,'sine',.28,.35,60); noise(.1,.28,.25,250,100,2); },
+    trickle(){ for (let i = 0; i < 9; i++) tone(1400 + Math.random()*900, .06, 'sine', i*.08, .07); noise(.8, 0, .12, 3000, 2500, 1.5); },
+    squelch(){ noise(.35, 0, .45, 500, 120, 3); tone(140,.35,'sawtooth',0,.12,60); },
+    crunch(){ for (let i = 0; i < 4; i++) noise(.05, i*.07, .35, 1800, 900, .8); },
+    bark(){ tone(520,.09,'square',0,.13,380); tone(560,.09,'square',.13,.13,400); },
+    woof(){ tone(300,.12,'square',0,.14,220); tone(320,.12,'square',.18,.14,230); },
+    hiss(){ noise(.45, 0, .3, 5000, 3000, .6); },
+    whine(){ tone(900,.5,'sine',0,.12,1300); tone(1300,.4,'sine',.5,.1,800); },
+    yawn(){ tone(500,.6,'triangle',0,.12,220); },
+    yelp(){ tone(1400,.18,'triangle',0,.2,700); tone(1100,.25,'triangle',.2,.16,500); },
+    ding(){ [0, .32].forEach(w => { tone(1760,.5,'sine',w,.16); tone(2637,.35,'sine',w,.07); }); },
+    whoosh(){ noise(.25, 0, .2, 600, 2400, .8); },
+    meh(){ tone(330,.18,'square',0,.07,300); },
+    wipe(){ noise(.2, 0, .2, 4000, 6000, .7); noise(.2, .18, .2, 4500, 7000, .7); }
+  };
+
+
+
+  Object.assign(SFX, {
+    click(){ noise(.03, 0, .6, 3800, 3200, 5); tone(2600, .03, 'square', 0, .08); },
+    boing(){ tone(260, .32, 'sine', 0, .18, 760); },
+    spinS(){ noise(.5, 0, .14, 500, 2600, .9); },
+    thump(){ tone(120, .18, 'sine', 0, .3, 60); noise(.08, 0, .15, 300, 150, 1.5); },
+    sigh(){ tone(520, .5, 'sine', 0, .1, 300); },
+    ok(){ tone(1568, .12, 'sine', 0, .12); tone(2093, .2, 'sine', .08, .1); },
+    applause(){ for (let i = 0; i < 70; i++) noise(.05 + Math.random()*.04, Math.random()*2.2, .1 + Math.random()*.12, 1500 + Math.random()*2500, 0, 1.4); },
+    awww(){ [0, .04, .08].forEach((w, i) => tone(620 + i*40, 1.1, 'sine', w, .07, 380 + i*30)); }
+  });
+
+  // ---------- poppy, side view (built once, reused) ----------
+  function poppySVG(){
+    return `
+    <g id="pp">
+      <ellipse class="pp-shadow" cx="5" cy="2" rx="58" ry="8" fill="rgba(30,40,10,.18)"/>
+      <g id="ppLift">
+        <g id="ppTail"><path d="M-46 -62 C -66 -70, -76 -92, -66 -112" stroke="#b5762e" stroke-width="9" fill="none" stroke-linecap="round"/></g>
+        <g id="ppLegs">
+          <g id="legB1"><rect x="-44" y="-44" width="12" height="40" rx="6" fill="#a96c2c"/><ellipse cx="-37" cy="-4" rx="9" ry="5" fill="#a96c2c"/></g>
+          <g id="legF1"><rect x="24" y="-44" width="12" height="40" rx="6" fill="#a96c2c"/><ellipse cx="32" cy="-4" rx="9" ry="5" fill="#a96c2c"/></g>
+          <g id="legB2"><rect x="-30" y="-46" width="13" height="42" rx="6" fill="#c98a45"/><ellipse cx="-22" cy="-4" rx="9" ry="5" fill="#b5762e"/></g>
+          <g id="legF2"><rect x="38" y="-46" width="13" height="42" rx="6" fill="#c98a45"/><ellipse cx="46" cy="-4" rx="9" ry="5" fill="#b5762e"/></g>
+        </g>
+        <g id="ppBody">
+          <ellipse cx="0" cy="-58" rx="54" ry="26" fill="#c98a45"/>
+          <ellipse cx="6" cy="-43" rx="38" ry="9" fill="#d9a466"/>
+          <path d="M-30 -82 Q -2 -88 26 -82 Q -2 -78 -30 -79 Z" fill="#8d5a24"/>
+          <circle cx="22" cy="-82" r="3" fill="#8d5a24"/><circle cx="14" cy="-84" r="3" fill="#8d5a24"/>
+        </g>
+        <g id="ppHead">
+          <ellipse cx="42" cy="-74" rx="17" ry="19" fill="#c98a45"/>
+          <path d="M30 -84 Q 42 -70 52 -60" stroke="#ff7a59" stroke-width="7" fill="none" stroke-linecap="round"/>
+          <ellipse cx="60" cy="-94" rx="23" ry="20" fill="#c98a45"/>
+          <ellipse cx="80" cy="-86" rx="14" ry="10" fill="#5a3b1e"/>
+          <circle cx="91" cy="-90" r="5" fill="#1d1612"/>
+          <path d="M50 -108 C 37 -106, 35 -86, 43 -77 C 52 -81, 56 -94, 54 -108 Z" fill="#9c6128"/>
+          <g id="ppEye"><circle cx="67" cy="-99" r="3.4" fill="#1d1612"/><circle cx="68" cy="-100.2" r="1.1" fill="#fff"/></g>
+          <path id="ppEyeShut" d="M63 -98 Q 67 -95 71 -98" stroke="#1d1612" stroke-width="2.4" fill="none" stroke-linecap="round" style="display:none"/>
+          <path d="M78 -79 Q 84 -76 89 -79" stroke="#1d1612" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </g>
+      </g>
+      
+    </g>`;
+  }
+
+
+
+  // ---------- the garden ----------
+  function gardenBG(){
+    let s = `
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe6ff"/><stop offset="1" stop-color="#e9f7ff"/></linearGradient>
+      <pattern id="stripes" width="60" height="80" patternUnits="userSpaceOnUse"><rect width="30" height="80" fill="#86cf63"/><rect x="30" width="30" height="80" fill="#7cc65a"/></pattern>
+    </defs>
+    <rect width="800" height="420" fill="url(#sky)"/>
+    <circle cx="690" cy="70" r="36" fill="#ffe27a"/><circle cx="690" cy="70" r="48" fill="#ffe27a" opacity=".25"/>
+    <g fill="#fff" opacity=".9"><ellipse cx="560" cy="60" rx="46" ry="16"/><ellipse cx="595" cy="50" rx="30" ry="16"/><ellipse cx="420" cy="150" rx="38" ry="12"/><ellipse cx="445" cy="142" rx="22" ry="12"/></g>
+    <path d="M0 290 Q 40 240 90 270 Q 140 230 200 268 Q 260 236 320 266 Q 380 232 440 262 Q 500 230 560 262 Q 620 236 680 262 Q 740 232 800 260 L800 320 L0 320 Z" fill="#5fae4a"/>
+    <g stroke="#d8b483" stroke-width="7" stroke-linecap="round">`;
+    for (let x = 20; x < 800; x += 46) s += `<line x1="${x}" y1="300" x2="${x}" y2="250"/>`;
+    s += `</g><line x1="0" y1="266" x2="800" y2="266" stroke="#d8b483" stroke-width="5"/><line x1="0" y1="290" x2="800" y2="290" stroke="#d8b483" stroke-width="5"/>
+    <rect x="0" y="312" width="800" height="108" fill="url(#stripes)"/>`;
+    // flowerbed on the left, bowl and a ball
+    s += `<path d="M40 360 Q 40 326 70 322 L 205 322 Q 235 326 235 360 Z" fill="#8b5a2b"/>`;
+    [[50,300],[78,292],[106,302],[134,290],[162,300],[190,294],[214,302]].forEach(([x,y],i) => s += `<use href="#${i%2?'daisy':'tulip'}" transform="translate(${x-30},${y-36}) scale(.6)"/>`);
+    s += `<path d="M268 386 h34 l-5 12 h-24 z" fill="#4dabf7"/><ellipse cx="285" cy="386" rx="17" ry="4" fill="#2f86cf"/>
+    <circle cx="742" cy="392" r="15" fill="#ff7a59"/><path d="M729 386 Q 742 396 755 386" stroke="#fff" stroke-width="3" fill="none"/>`;
+    return s;
+  }
+  function gardenFG(){
+    return `<g>
+      <ellipse cx="770" cy="322" rx="54" ry="44" fill="#3f8a34"/>
+      <ellipse cx="742" cy="337" rx="34" ry="30" fill="#4f9a3e"/><ellipse cx="798" cy="340" rx="34" ry="28" fill="#4f9a3e"/>
+      <ellipse cx="770" cy="304" rx="30" ry="24" fill="#5fae4a"/>
+      <g fill="#ff7a9e"><circle cx="754" cy="310" r="4"/><circle cx="786" cy="322" r="4"/><circle cx="768" cy="292" r="4"/></g>
+    </g>`;
+  }
+  function crowdSVG(){
+    const cols = ['#6c8ebf','#e6735f','#69db7c','#ffd43b','#da77f2','#4dabf7','#ff9a3b','#8c8798'];
+    const skins = ['#f1c9a5','#c98a5e','#8d5a3c','#ffdcb8','#a86f4c'];
+    let s = '<g class="crowd" id="crowd">';
+    for (let i = 0; i < 12; i++){
+      const x = 20 + i*70 + (i % 2 ? 8 : -6), y = 404 + (i % 3)*6;
+      s += `<g class="fan" style="transform-origin:${x}px ${y + 30}px; transform-box:view-box; animation-delay:${(i%4)*.07}s">
+        <ellipse cx="${x}" cy="${y + 34}" rx="34" ry="26" fill="${cols[i % cols.length]}"/>
+        <circle cx="${x}" cy="${y - 4}" r="20" fill="${skins[i % skins.length]}"/>
+        <path d="M${x - 20} ${y - 8} Q ${x} ${y - 34} ${x + 20} ${y - 8} Q ${x} ${y - 20} ${x - 20} ${y - 8} Z" fill="${['#3f3a4a','#8b5a2b','#ffd43b','#c0392b'][i % 4]}"/>
+      </g>`;
+    }
+    return s + '</g><g id="hearts"></g>';
+  }
+
+  // ---------- scene ----------
+  function buildScene(){
+    scene.innerHTML = `
+      <g id="bg">${gardenBG()}</g>
+      ${g.L.show ? `<rect x="300" y="350" width="440" height="22" rx="8" fill="#c98a45" opacity=".55"/>` : ''}
+      <g id="treatFly" style="display:none"><g transform="scale(.42) translate(-50,-36)"><use href="#bone"/></g></g>
+      ${poppySVG()}
+      <g id="fg">${gardenFG()}</g>
+      ${g.L.show ? crowdSVG() : ''}
+      <g id="pbubble" style="display:none">
+        <rect id="pbRect" x="-60" y="-28" width="120" height="40" rx="16" fill="#fff" stroke="#f1e6d6" stroke-width="2"/>
+        <path d="M-8 9 L0 22 L8 9 Z" fill="#fff"/>
+        <text id="pbText" x="0" y="0" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="600" font-size="24" fill="#3f3a4a"></text>
+      </g>
+      <text id="scared" x="0" y="0" text-anchor="middle" font-size="46" style="display:none">😟</text>`;
+    P = {
+      pp: $('pp'), lift: $('ppLift'), head: $('ppHead'), tail: $('ppTail'), legs: $('ppLegs'),
+      lb1: $('legB1'), lb2: $('legB2'), lf1: $('legF1'), lf2: $('legF2'), eye: $('ppEye'), eyeShut: $('ppEyeShut'),
+      pb: $('pbubble'), pbText: $('pbText'), pbRect: $('pbRect'), scared: $('scared'), fly: $('treatFly'),
+      crowd: $('crowd'), hearts: $('hearts')
+    };
+  }
+
+  // ---------- Poppy's poses ----------
+  const Q = {lift:0, sit:0, head:0, tail:0, lf1:0, lf2:0, lb1:0, lb2:0, roll:0, dx:0};
+  let dir = 1, flyT = -1;
+  function sitPose(T){ T.sit = -28; T.lf1 = T.lf2 = 28; T.lb1 = T.lb2 = -62; T.head = -10; T.tail = 50; }
+  function downPose(T, k){ T.lift = 27*k; T.lf1 = T.lf2 = -84*k; T.lb1 = T.lb2 = -72*k; T.head = 4*k; T.tail = 34*k; }
+  function poseFor(b, k, t, pose){
+    const T = {lift:0, sit:0, head:-6 + Math.sin(t*2)*3, tail:Math.sin(t*14)*18, lf1:0, lf2:0, lb1:0, lb2:0, roll:0, dx:0};
+    switch (b){
+      case 'sniff': T.head = 34 + Math.sin(t*16)*4; T.tail = Math.sin(t*5)*12; T.dx = Math.sin(k*Math.PI)*14; T.lf1 = Math.sin(t*9)*10; T.lf2 = -T.lf1; break;
+      case 'sit': sitPose(T); T.tail = 50 + Math.sin(t*10)*6; break;
+      case 'paw': sitPose(T); T.lf2 = -64 + Math.sin(t*7)*8; T.head = -18; break;
+      case 'spin': T.lift = -Math.abs(Math.sin(t*12))*9; T.tail = 30; T.lf1 = Math.sin(t*24)*24; T.lf2 = -T.lf1; T.lb1 = -T.lf1; T.lb2 = T.lf1; break;
+      case 'bark': { const up = Math.sin(t*14) > 0.2; T.head = up ? -30 : -16; T.lift = up ? -5 : 0; T.tail = 24 + Math.sin(t*20)*8; break; }
+      case 'jump': { const j = Math.sin(Math.PI*clamp(k*1.3 - .15, 0, 1)); T.lift = -78*j; T.lf1 = T.lf2 = -40*j; T.lb1 = T.lb2 = 40*j; T.head = -14; T.tail = 20 + 30*j; break; }
+      case 'pre': downPose(T, clamp(k*1.1, 0, 1)); T.head = 14; break;
+      case 'down': downPose(T, 1); T.tail = 34 + Math.sin(t*9)*10; break;
+      case 'side': downPose(T, 1); T.lift = 34; T.sit = 7; T.head = 40; T.lf1 = -100; T.lf2 = -112; T.lb1 = 96; T.lb2 = 84; T.tail = 82; break;
+      case 'roll': { downPose(T, 1); const e = k < .5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2)/2; T.roll = 360*e; T.lift = 27 - Math.sin(Math.PI*k)*62; T.dx = 30*e; T.lf1 = T.lf2 = T.lb1 = T.lb2 = -40; break; }
+      case 'eat': T.head = 30 + Math.sin(t*20)*5; T.tail = Math.sin(t*24)*30; break;
+      case 'forced': {
+        const f = pose || 'sit';
+        if (f === 'sit' || f === 'paw') sitPose(T); else downPose(T, 1);
+        if (f === 'paw') T.lf2 = -60;
+        if (f === 'roll'){ T.roll = 180*clamp(k*2, 0, 1); T.lift = 27 - 50*Math.sin(Math.PI*clamp(k*2, 0, 1)); }
+        T.head = 26; T.tail = 70; break;
+      }
+      case 'wait': T.head = -10 + Math.sin(t*3)*3; T.tail = Math.sin(t*16)*20; break;
+    }
+    return T;
+  }
+  const LABEL = {sniff:'sniff sniff', sit:'sit!', paw:'paw!', spin:'spin!', bark:'WOOF!', jump:'boing!', pre:'lying down…', down:'down!', side:'flop!', roll:'roll!', eat:'nom nom', forced:'hey…!'};
+  function renderPoppy(dt){
+    const c = g.cur, b = c.b, k = clamp(c.t / c.dur, 0, 1);
+    const T = poseFor(b, k, tt, c.pose);
+    const snap = b === 'jump' || b === 'roll' || (b === 'forced' && c.pose === 'roll');
+    if (!snap && Q.roll > 180) Q.roll -= 360;
+    const f = snap ? 1 : Math.min(1, dt*13);
+    for (const key in Q){ if (snap && (key === 'lf1' || key === 'lf2' || key === 'lb1' || key === 'lb2' || key === 'head')) Q[key] += (T[key] - Q[key])*Math.min(1, dt*13); else Q[key] += (T[key] - Q[key])*f; }
+    if (b === 'spin') dir = Math.sin(tt*7) > 0 ? 1 : -1; else dir = 1;
+    const cower = tt < cowerUntil;
+    const shiver = cower ? Math.sin(tt*60)*2.2 : 0;
+    const x = X0 + Q.dx + shiver;
+    P.pp.setAttribute('transform', `translate(${x.toFixed(1)},${GY}) scale(${dir*S},${S})`);
+    P.lift.setAttribute('transform', `translate(0,${Q.lift.toFixed(1)}) rotate(${Q.sit.toFixed(1)} 34 -4) rotate(${Q.roll.toFixed(1)} 0 -40)`);
+    P.head.setAttribute('transform', `rotate(${Q.head.toFixed(1)} 40 -70)`);
+    P.tail.setAttribute('transform', `rotate(${Q.tail.toFixed(1)} -46 -62)`);
+    P.lf1.setAttribute('transform', `rotate(${Q.lf1.toFixed(1)} 30 -42)`);
+    P.lf2.setAttribute('transform', `rotate(${Q.lf2.toFixed(1)} 44 -42)`);
+    P.lb1.setAttribute('transform', `rotate(${Q.lb1.toFixed(1)} -38 -42)`);
+    P.lb2.setAttribute('transform', `rotate(${Q.lb2.toFixed(1)} -24 -42)`);
+    const shut = b === 'side' || (b === 'eat' && Math.sin(tt*6) > .6);
+    P.eye.style.display = shut ? 'none' : ''; P.eyeShut.style.display = shut ? '' : 'none';
+    // what she's doing, over her head
+    const txt = LABEL[b];
+    if (txt && !(b === 'roll' && k > .9)){
+      P.pbText.textContent = txt;
+      const w = Math.max(90, txt.length * 13 + 30);
+      P.pbRect.setAttribute('x', -w/2); P.pbRect.setAttribute('width', w);
+      const by = GY - 190 + Math.min(Q.lift, 0) * (b === 'jump' ? 1.35 : 0) + (b === 'pre' || b === 'down' || b === 'side' ? 34 : 0);
+      P.pb.setAttribute('transform', `translate(${clamp(x + 30, w/2 + 6, 800 - w/2 - 6).toFixed(1)},${by.toFixed(1)})`);
+      P.pb.style.display = '';
+    } else P.pb.style.display = 'none';
+    if ((g.trust < 2 || cower) && P.pb.style.display === 'none'){
+      P.scared.style.display = ''; P.scared.setAttribute('transform', `translate(${x + 50},${GY - 185 + Math.sin(tt*4)*3})`);
+    } else P.scared.style.display = 'none';
+    // a treat flying in
+    if (flyT >= 0){
+      flyT += dt; const u = Math.min(1, flyT/0.35);
+      const tx = x + 108*dir, ty = GY - 120 + Q.lift*S;
+      const fx = 300 + (tx - 300)*u, fy = 440 + (ty - 440)*u - Math.sin(Math.PI*u)*90;
+      P.fly.style.display = ''; P.fly.setAttribute('transform', `translate(${fx.toFixed(1)},${fy.toFixed(1)}) rotate(${(u*540).toFixed(0)})`);
+      if (u >= 1){ flyT = -1; P.fly.style.display = 'none'; }
+    }
+  }
+
+  // ---------- thought cloud ----------
+  const WORD = {sniff:'sniff', sit:'sit', paw:'paw', spin:'spin', bark:'bark', jump:'jump', down:'lie down', side:'flop', roll:'roll over'};
+  let cloudT = 0, cloudKey = '';
+  function renderCloud(dt, force){
+    const cl = $('cloud'), mode = g.L.cloud;
+    cl.classList.toggle('hide', mode === 'none');
+    if (mode === 'none') return;
+    if (!force && (cloudT -= dt) > 0) return;
+    cloudT = 0.25;
+    let th = thoughts(g).filter(o => o.p >= 0.015);
+    if (mode === 'top') th = th.slice(0, 1);
+    cl.classList.toggle('single', mode === 'top');
+    const goal = g.L.target, words = $('words');
+    const key = th.map(o => o.b).join(',');
+    if (key !== cloudKey){
+      cloudKey = key;
+      // keep a stable order so words don't jump around: by behaviour, not by size
+      const order = mode === 'top' ? th : TRICKS.map(b => th.find(o => o.b === b)).filter(Boolean);
+      words.innerHTML = order.map(o => `<span class="th${o.b === goal ? ' goal' : ''}" data-b="${o.b}">${WORD[o.b]}</span>`).join('');
+    }
+    for (const el of words.children){
+      const o = th.find(x => x.b === el.dataset.b); if (!o) continue;
+      const s = mode === 'top' ? 2.3 : 0.95 + 2.6*Math.sqrt(o.p);
+      el.style.setProperty('--s', s.toFixed(2));
+      el.classList.toggle('tiny', o.p < 0.05);
+    }
+  }
+  function grew(b){
+    const el = $('words').querySelector(`[data-b="${b}"]`);
+    if (el){ el.classList.remove('grew'); void el.offsetWidth; el.classList.add('grew'); }
+  }
+
+  // ---------- HUD ----------
+  const PAW = '<svg viewBox="-16 -16 32 32"><ellipse cx="0" cy="5" rx="8" ry="6.5"/><circle cx="-9" cy="-4" r="3.6"/><circle cx="-3" cy="-9" r="3.6"/><circle cx="4" cy="-9" r="3.6"/><circle cx="10" cy="-4" r="3.6"/></svg>';
+  function buildHud(){
+    $('paws').innerHTML = Array.from({length: g.L.need}, () => `<span class="paw">${PAW}</span>`).join('');
+    $('pawLab').textContent = g.L.name.replace('!', '');
+    $('cueWrap').style.display = g.L.cue ? '' : 'none';
+    $('cues').innerHTML = g.L.cue ? Array.from({length: g.L.cue}, () => `<span class="ring">"D!"</span>`).join('') : '';
+    $('cueBtn').classList.toggle('hidden', !g.L.cue);
+    $('forceLab').textContent = g.L.force || '';
+    const show = !!g.L.show;
+    $('controls').style.display = show ? 'none' : '';
+    $('showCtl').classList.toggle('hidden', !show);
+    $('progressWrap').style.display = show ? 'none' : '';
+    $('timebar').style.display = show ? 'none' : '';
+    $('treatChip').style.display = show ? 'none' : '';
+  }
+  function lightRow(els, n){
+    for (let i = 0; i < els.length; i++){
+      const on = i < n, el = els[i];
+      if (on && !el.classList.contains('on')){ el.classList.add('on','pop'); setTimeout(() => el.classList.remove('pop'), 700); }
+      if (!on && el.classList.contains('on')){ el.classList.remove('on'); el.classList.add('lost'); setTimeout(() => el.classList.remove('lost'), 700); }
+    }
+  }
+  let hintsLeft = 3;
+  function renderHud(){
+    if (g.L.show) return;
+    lightRow($('paws').children, g.paws);
+    if (g.L.cue) lightRow($('cues').children, g.assoc);
+    $('treatN').textContent = g.treats;
+    $('treatChip').classList.toggle('low', g.treats <= 3 && !g.learned);
+    $('trustTag').style.display = g.trust < 2 ? '' : 'none';
+    $('timeFill').style.width = (g.learned ? 100 : Math.max(0, 100*(1 - g.t/g.L.time))) + '%';
+    // first stage: the YES! button pulses while she sits, the first few times
+    const b = g.cur.b;
+    $('yesBtn').classList.toggle('now', !g.learned && g.key === 'sit' && hintsLeft > 0 && b === 'sit');
+    $('cueBtn').classList.toggle('now', !!g.L.cue && ((g.learned && g.demoWait) || (!g.learned && g.assoc === 0 && g.stats.cueGood === 0 && b === 'pre' && !g.cuedThis)));
+  }
+
+  // ---------- messages & effects ----------
+  function say(html){ sayEl.innerHTML = html; }
+  function tip(key, text, max){ tipCount[key] = (tipCount[key] || 0) + 1; return tipCount[key] <= (max || 2) ? ` <i>${text}</i>` : ''; }
+  let bannerFree = 0;
+  function banner(text, cls){
+    const nowMs = performance.now(), at = Math.max(nowMs, bannerFree), wait = at - nowMs;
+    bannerFree = at + 1300;
+    setTimeout(() => {
+      const b = document.createElement('div'); b.className = 'banner ' + cls + (text.length > 13 && !/huge/.test(cls) ? ' long' : ''); b.textContent = text;
+      $('sceneWrap').appendChild(b); setTimeout(() => b.remove(), 2000);
+    }, wait);
+  }
+  // Poppy's fright: a red comic burst, a yelp, and she cowers
+  let cowerUntil = 0;
+  function fright(text){
+    ahh(text, X0, true); SFX.yelp(); cowerUntil = tt + 2.6; flash('bad');
+  }
+  function flash(cls){ const f = $('flash'); f.className = ''; void f.offsetWidth; f.className = cls; }
+  function shake(){ const w = $('sceneWrap'); w.classList.remove('shake'); void w.offsetWidth; w.classList.add('shake'); }
+  function confetti(n){
+    const cols = ['#ff7a59','#ffd43b','#69db7c','#4dabf7','#da77f2','#fff'];
+    for (let i = 0; i < n; i++){
+      const c = document.createElement('div'); c.className = 'confetti';
+      c.style.left = Math.random()*100 + 'vw'; c.style.background = cols[i % cols.length];
+      c.style.animationDuration = (2 + Math.random()*1.6) + 's'; c.style.animationDelay = (Math.random()*.6) + 's';
+      document.body.appendChild(c); setTimeout(() => c.remove(), 4200);
+    }
+  }
+  const pick = a => a[Math.floor(Math.random()*a.length)];
+  // comic burst over her head when she's done
+  function ahh(text, x, bad){
+    const wrap = $('sceneWrap'), W = wrap.clientWidth;
+    const b = document.createElement('div'); b.className = 'ahh' + (bad ? ' bad' : ''); b.textContent = text;
+    b.style.top = ((GY - 128)/420*100) + '%'; b.style.left = '50%'; b.style.visibility = 'hidden';
+    wrap.appendChild(b);
+    // measure at full size (the animation starts scaled down), then keep it inside the picture
+    const w = b.scrollWidth + 6;
+    const px = clamp(x/800*W, w/2 + 6, W - w/2 - 6);
+    b.style.left = px + 'px'; b.style.visibility = '';
+    setTimeout(() => b.remove(), 1600);
+  }
+
+
+  function hearts(n){
+    if (!P.hearts) return;
+    for (let i = 0; i < n; i++){
+      const x = 60 + Math.random()*680, y = 380, el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      el.setAttribute('x', x); el.setAttribute('y', y); el.setAttribute('font-size', 30 + Math.random()*16); el.setAttribute('class', 'heart');
+      el.style.animationDelay = (Math.random()*.8) + 's'; el.textContent = Math.random() < .7 ? '❤️' : '👏';
+      P.hearts.appendChild(el); setTimeout(() => el.remove(), 2800);
+    }
+  }
+  function crowd(cls){ if (!P.crowd) return; P.crowd.classList.remove('cheer','aww'); void P.crowd.getBBox(); P.crowd.classList.add(cls); }
+
+  const NAME = {sniff:'sniffing', sit:'sitting', paw:'giving paw', spin:'spinning', bark:'barking', jump:'jumping', down:'lying down', side:'flopping on her side', roll:'rolling over'};
+  const MORE = {sniff:'MORE SNIFFING!', sit:'MORE SITTING!', paw:'MORE PAWS!', spin:'MORE SPINNING!', bark:'MORE BARKING!', jump:'MORE JUMPING!', down:'MORE LYING DOWN!', side:'MORE FLOPPING!'};
+  const LEARNED = {sit:'SHE SITS!', paw:'SHE GIVES PAW!', down:'DOWN ON CUE!', roll:'SHE ROLLS OVER!'};
+  function handleEvents(){
+    const evs = g.events.splice(0);
+    for (const e of evs){
+      switch (e.type){
+        case 'offer':
+          if (e.b === 'bark') SFX.woof();
+          else if (e.b === 'jump') SFX.boing();
+          else if (e.b === 'spin' || e.b === 'roll') SFX.spinS();
+          else if (e.b === 'down' || e.b === 'side') SFX.thump();
+          if (g.L.show) break;
+          if (e.b === g.L.target && !g.learned && !(g.cur.demo)){
+            if (g.key === 'sit' && hintsLeft > 0){ say('<b>She\'s sitting!</b> Press <b>YES!</b> now!'); }
+            else if (g.key === 'paw' && g.paws === 0) say('<b>A paw!</b> Quick: <b>YES!</b>');
+            else if (g.key === 'roll' && g.paws === 0) say('<b>She\'s rolling over!</b> <b>YES!</b>');
+          }
+          if (g.key === 'down' && e.b === 'pre' && !g.learned && g.stats.cueGood === 0) say('She\'s lying down… <b>say "Down!"</b> now!');
+          break;
+        case 'reward': {
+          SFX.click(); flyT = 0; setTimeout(SFX.crunch, 380);
+          const b = e.b;
+          if (e.q === 'forced'){ SFX.meh(); say('A treat for being pushed? <b>She learned nothing.</b> <i>You did the trick, not her.</i>'); break; }
+          if (e.q === 'early'){ SFX.meh(); ahh('Huh?', X0, true); say('<b>Too early!</b> She wasn\'t down yet. <i>Wait until she\'s all the way down.</i>'); break; }
+          if (e.q === 'nothing'){ SFX.meh(); ahh('For what?', X0, true); say('A treat for… standing there? <i>She\'s confused. Wait for the trick.</i>'); break; }
+          if (e.target){
+            if (g.key === 'sit') hintsLeft--;
+            setTimeout(() => grew(b), 200);
+            if (e.q === 'perfect'){
+              setTimeout(SFX.lesson, 520);
+              ahh(pick(['Yes!','Good girl!','Yes!']), X0);
+              let t = `<b>YES!</b> A treat for <b>${NAME[b]}</b>. ` + (e.paw ? (e.paw < g.L.need ? `Paw ${e.paw} of ${g.L.need}!` : 'All paws!') : '');
+              if (g.L.cue){
+                if (e.cue) t += ` And she heard <b>"Down!"</b> first: the word is starting to mean something.`;
+                else if (g.assoc < g.L.cue) t += tip('nocue', ' But no "Down!" first, so the word means nothing yet.', 3);
+              }
+              if (e.paw === 1) t += tip('first', '(Look at her thought cloud: that word just got bigger.)', 1);
+              say(t);
+            } else {
+              SFX.meh();
+              say(`A bit <b>late</b>: she'd already stopped ${NAME[b]}. <i>Half a lesson: she's not sure what it was for. No paw.</i>`);
+            }
+            break;
+          }
+          setTimeout(() => grew(b), 200);
+          if (e.step){
+            if (b === 'sit') say(`A treat for <b>sitting</b>. She sits more now, but the treat stops her. <i>No paw this time: a paw only comes if the sit gets nothing.</i>`);
+            else if (b === 'down') say(`A treat for <b>lying down</b>. That's the first step. <i>Next: lying on her side.</i>`);
+            else if (b === 'side') say(g.sideRewarded >= 2 ? `<b>Flop!</b> She knows that one now. <i>Time to hold back: no more treats for flopping. She'll try harder.</i>` : `<b>Flop!</b> A treat for lying on her side. <i>A couple more, then hold back.</i>`);
+            break;
+          }
+          SFX.meh(); banner(MORE[b] || 'OOPS!', 'bad');
+          say(`A treat for <b>${NAME[b]}</b>? Now she'll do <b>that</b> more!` + tip('wrong', '(The treat goes to whatever she\'s doing right now.)', 3));
+          break;
+        }
+        case 'learned':
+          setTimeout(() => {
+            SFX.win(); setTimeout(() => confetti(110), 1400);
+            banner(LEARNED[g.L.target], 'good huge');
+            say(g.L.cue ? '<b>She\'s got it!</b> Now say <b>"Down!"</b> and watch.' : '<b>She\'s got it!</b> Watch: she\'ll show you, all by herself.');
+          }, 700);
+          break;
+        case 'demoReward': SFX.crunch(); ahh(pick(['Good girl!','Clever!','Yes!']), X0); flyT = 0; break;
+        case 'obey': SFX.ok(); ahh('"Down!"', X0 - 120); say('She heard the word, and <b>down she goes</b>!'); break;
+        case 'cueOk': SFX.ok(); ahh('"Down!"', X0 - 140); say('<b>"Down!"</b> just as she lies down. Now <b>YES!</b> when she\'s all the way down.'); break;
+        case 'cueBad':
+          SFX.meh(); ahh('"Down!"?', X0 - 140, true);
+          if (e.lost){ banner('SHE\'S CONFUSED', 'bad'); }
+          say(`"Down!"? She was ${e.b === 'idle' || e.b === 'eat' || e.b === 'forced' ? 'just standing there' : '<b>' + NAME[e.b] + '</b>'}. ${e.lost ? '<b>The word means a little less now.</b> ' : ''}<i>Say it just as she starts to lie down.</i>`);
+          break;
+        case 'burst':
+          if (g.stats.burst <= 2 || Math.random() < .3){
+            ahh('Hmm?', X0);
+            if (g.stats.burst === 1) banner('SHE\'S TRYING HARDER!', 'mid');
+            say(e.b === 'sit' ? 'She sat… and nothing came. <b>She\'s trying harder</b>: a paw is getting more likely.' : 'She flopped… and nothing came. <b>She\'s trying harder</b>: a roll is getting more likely.');
+          }
+          break;
+        case 'force': {
+          fright('Hey!'); cowerUntil = tt + 2.2;
+          banner('SHE LEARNED NOTHING', 'bad');
+          const what = {sit: 'sitting', paw: 'giving paw', down: 'lying down', roll: 'on her back'}[g.L.forcePose];
+          say(`You pushed her into ${what}. <b>She learned nothing</b>, except to be a little wary of you.` + tip('force', '(She\'ll offer things less often now.)', 2));
+          break;
+        }
+        case 'munching': say('She\'s still munching…'); break;
+        case 'watch': say('Just watch her!'); break;
+        case 'win': setTimeout(finish, 1400); break;
+        case 'timeup': SFX.sigh(); say('Puff. Poppy is tired: <b>training time is up</b>.'); setTimeout(finish, 1300); break;
+        case 'outOfTreats': SFX.sigh(); say('<b>All the treats are gone.</b> That\'s it for today.'); setTimeout(finish, 1300); break;
+        case 'performed': {
+          showsDone++;
+          if (e.ok){ SFX.applause(); setTimeout(SFX.goodChord, 200); banner(pick(['BRAVO!','WONDERFUL!','WHAT A DOG!']), 'good'); crowd('cheer'); hearts(14); say(`<b>${SHOWWORD[e.trick]}</b> She did it! The crowd goes wild.`); }
+          else { SFX.awww(); banner('AWWW!', 'mid'); crowd('aww'); hearts(5); say(`<b>${SHOWWORD[e.trick]}</b> …and she did a <b>${WORD[e.b]}</b> instead. <i>The crowd loves her anyway.</i>`); }
+          if (showsDone >= 4) setTimeout(showEnd, 2600);
+          else setTimeout(() => { if (g && g.L.show) say('Next trick?'); }, 2400);
+          break;
+        }
+      }
+    }
+  }
+
+  // ---------- loop ----------
+  function paused(){ return helpPanel.style.display !== 'none' || ending.style.display !== 'none' || document.hidden; }
+  function frame(ts){
+    raf = requestAnimationFrame(frame);
+    const dt = Math.min(0.05, last ? (ts - last)/1000 : 0); last = ts;
+    if (!g || paused()) return;
+    tt += dt;
+    if (g.L.show) showStep(g, dt); else if (!g.over) step(g, dt);
+    handleEvents(); renderPoppy(dt); renderCloud(dt); renderHud();
+  }
+
+  // ---------- the run ----------
+  const ORDER = LEVEL_ORDER;
+  const STAGE = ['Trick 1','Trick 2','Trick 3','Trick 4'];
+  const WHAT = {
+    sit: 'Poppy does all sorts of things. Catch her sitting, and say YES!',
+    paw: 'A paw only ever comes after a sit. Wait for the paw.',
+    down: 'Teach her a word: say "Down!" just as she lies down.',
+    roll: 'Step by step: lying on her side first. Then hold back.'
+  };
+  const STAMP_OK = {sit: 'SITS!', paw: 'GIVES PAW!', down: 'DOWN ON CUE!', roll: 'ROLLS OVER!'};
+  const STAMP_NO = {sit: 'NO SIT YET', paw: 'NO PAW YET', down: 'NO DOWN YET', roll: 'NO ROLL YET'};
+  const SHOWWORD = {sit: '"Sit!"', paw: '"Paw!"', down: '"Down!"', roll: '"Roll over!"'};
+  let run = {results: []};
+  try { const r = JSON.parse(localStorage.getItem('pt-run-v1') || 'null'); if (r && Array.isArray(r.results)) run = r; } catch(e){}
+  function saveRun(){ try { localStorage.setItem('pt-run-v1', JSON.stringify(run)); } catch(e){} }
+  function runTotal(){ return run.results.reduce((a, r) => a + r.score, 0); }
+
+  function renderRun(){
+    const n = run.results.length;
+    let h = ORDER.map((key, i) => {
+      const r = run.results[i], L = LEVELS[key];
+      const cls = r ? 'played' : i === n ? 'next' : 'locked';
+      const sub = r ? `<span class="mini ${r.learned ? 'ok' : 'no'}">${r.learned ? STAMP_OK[key] : STAMP_NO[key]}</span> <span class="what" style="display:inline">${r.score} points</span>`
+                : i === n ? `<span class="what">${WHAT[key]}</span>`
+                : `<span class="what">🔒 Teach ${STAGE[i-1].toLowerCase()} first.</span>`;
+      return `<button class="lvl k-${key} ${cls}" data-i="${i}"><span class="badge">${i+1}</span><span><span class="day">${STAGE[i]}</span><span class="name">${L.name}</span>${sub}</span></button>`;
+    }).join('');
+    h += `<button class="lvl k-show ${n === 4 ? 'next' : 'locked'}" data-i="4"><span class="badge">★</span><span><span class="day">The finale</span><span class="name">Poppy's show</span><span class="what">${n === 4 ? 'An audience! Call each trick and see what she does.' : '🔒 After all four tricks.'}</span></span></button>`;
+    $('stageCards').innerHTML = h;
+    $('stageCards').querySelectorAll('.lvl.next').forEach(b => b.addEventListener('click', () => { unlockAudio(); const i = +b.dataset.i; if (i === 4) startShow(); else startStage(i); }));
+    $('runBtns').innerHTML = n > 0 ? `<div><button class="btn secondary small" id="newRun0">Start again from trick 1</button></div>` : '';
+    if ($('newRun0')) $('newRun0').addEventListener('click', () => { run = {results: []}; saveRun(); renderRun(); });
+  }
+  renderRun();
+
+  function carryFor(i){ return i === 0 ? {} : (run.results[i-1].carry || {}); }
+  function introFor(i, c){
+    const key = ORDER[i], prev = run.results[i-1];
+    let t = '';
+    if (key === 'sit') t = 'Poppy sniffs, spins, barks and jumps about. Every now and then, she <b>sits</b>. That\'s the moment: press <b>YES!</b>';
+    else if (key === 'paw') t = prev.learned
+      ? '<b>Poppy sits!</b> Now the paw. A paw only ever comes <b>after a sit</b>, so wait for it. <i>Don\'t reward the sit: if a sit gets nothing, she tries a bit more.</i>'
+      : '<b>Sitting didn\'t stick</b>, and a paw only ever comes after a sit. This will be hard. <i>Maybe reward a few sits first.</i>';
+    else if (key === 'down') t = 'A new trick, and this time <b>a word</b>. When she starts to lie down, press <b>Say "Down!"</b>. When she\'s down: <b>YES!</b> Soon the word alone will do it.';
+    else t = 'The big one. A roll only comes from <b>lying on her side</b>, and that only from lying down. Reward the flop a couple of times. Then <b>stop</b>: she\'ll try harder, and sometimes roll all the way.' + (prev.learned ? '' : ' <i>She doesn\'t lie down much yet, so you may have to reward that first.</i>');
+    if (i > 0){
+      const top = topHabit({w: c.w}, null);
+      if (c.w && !run.results[i-1].learned && top !== 'sniff' && top !== ORDER[i-1]) t += ` <i>Right now she mostly thinks of <b>${NAME[top]}</b>.</i>`;
+      if (c.trust != null && c.trust < 2.5) t += ' <i>She remembers being pushed around: she\'s a bit wary.</i>';
+    }
+    return t;
+  }
+  let stageIndex = 0, showsDone = 0;
+  function begin(){
+    tipCount = {}; hintsLeft = 3; cloudKey = ''; cowerUntil = 0; flyT = -1;
+    for (const k in Q) Q[k] = 0;
+    landing.style.display = 'none'; ending.style.display = 'none';
+    gameEl.style.display = 'flex';
+    buildScene(); buildHud(); renderCloud(0, true);
+    last = 0;
+    if (!raf) raf = requestAnimationFrame(frame);
+  }
+  function startStage(i){
+    stageIndex = i;
+    const c = carryFor(i);
+    g = makeGame(ORDER[i], (Math.random()*4294967295) >>> 0, c);
+    $('levelName').textContent = STAGE[i] + ' · ' + g.L.name;
+    begin();
+    say(introFor(i, c));
+  }
+  function startShow(){
+    const c = carryFor(4);
+    g = makeGame('show', (Math.random()*4294967295) >>> 0, c);
+    g.cur = {b: 'wait', t: 0, dur: 99};
+    showsDone = 0;
+    $('levelName').textContent = 'The finale · Poppy\'s show';
+    document.querySelectorAll('#showCtl button').forEach(b => b.disabled = false);
+    begin();
+    say('An audience! <b>Call a trick</b> and see what Poppy does. She can only do what she\'s learned. Everything else… well.');
+  }
+  function finish(){
+    if (!g || g.L.show) return;
+    const key = g.key, sc = stageScore(g), learned = g.learned;
+    run.results[stageIndex] = {key, learned, score: sc.total, carry: carryOut(g)};
+    run.results.length = stageIndex + 1; saveRun();
+    $('endDay').textContent = STAGE[stageIndex] + ' · ' + g.L.name;
+    $('endTitle').textContent = learned ? ({sit: 'She sits!', paw: 'She gives paw!', down: 'She lies down on "Down!"', roll: 'She rolls over!'})[key]
+      : g.why === 'treats' ? 'Out of treats' : 'Training time is up';
+    $('endStamp').innerHTML = `<span class="stamp ${learned ? 'ok' : 'no'} ${learned && key === 'roll' ? 'big' : ''}">${learned ? STAMP_OK[key] : STAMP_NO[key]}</span>`;
+    const s = g.stats;
+    let txt = learned ? `She learned it in <b>${Math.round(s.learnedAt)} seconds</b>, with <b>${g.treats}</b> treat${g.treats === 1 ? '' : 's'} to spare.`
+      : `Poppy got <b>${g.paws} of ${g.L.need}</b> paws${g.L.cue ? ` and <b>${g.assoc} of ${g.L.cue}</b> "Down!"s` : ''}. ` + (stageIndex < 3 ? 'She\'ll bring what she did learn to the next trick.' : 'That was the last trick before the show.');
+    const top = topHabit(g, null);
+    if (s.wrong >= 2 && top !== g.L.target && top !== 'sniff') txt += ` <i>And she's now really into <b>${NAME[top]}</b>.</i>`;
+    if (s.force) txt += ` <i>You pushed her ${s.force} time${s.force > 1 ? 's' : ''}. ${learned ? 'She learned anyway, but not from that.' : 'That teaches nothing.'}</i>`;
+    $('endText').innerHTML = txt;
+    let bestS = 0; try { bestS = +localStorage.getItem('pt-best-' + key) || 0; } catch(e){}
+    const isBest = sc.total > bestS;
+    if (isBest) try { localStorage.setItem('pt-best-' + key, String(sc.total)); } catch(e){}
+    $('endScore').innerHTML = `<div class="bigscore">${sc.total}<small>points</small></div>`
+      + `<div class="best ${isBest && bestS ? 'new' : ''}">${isBest ? (bestS ? 'New best for this trick!' : 'Your first score for this trick') : `Best for this trick: ${bestS}`}</div>`
+      + `<details><summary>How the score was made</summary><table class="score">${sc.lines.map(([k, v]) => `<tr class="${v < 0 ? 'neg' : ''}"><td>${k}</td><td>${v > 0 ? '+' : ''}${v}</td></tr>`).join('')}</table></details>`;
+    $('newRunBtn2').style.display = '';
+    $('nextBtn').textContent = stageIndex < 3 ? `On to trick ${stageIndex + 2}: ${LEVELS[ORDER[stageIndex + 1]].name}` : 'On to the show!';
+    if (learned){ SFX.win(); confetti(key === 'roll' ? 150 : 80); }
+    ending.style.display = 'flex';
+  }
+  function closingLine(n){
+    return ['Poppy has trained you: she does whatever she likes, and gets treats for it.',
+            'One trick, done beautifully. The rest was improvisation.',
+            'Half a show, and a whole lot of charm.',
+            'Three out of four. Nobody noticed the fourth.',
+            'A star is born. Poppy takes a bow.'][n];
+  }
+  function showEnd(){
+    const res = run.results, n = res.filter(r => r.learned).length, total = runTotal() + n*50;
+    let best = 0; try { best = +localStorage.getItem('pt-best-run') || 0; } catch(e){}
+    const isBest = total > best; if (isBest) try { localStorage.setItem('pt-best-run', String(total)); } catch(e){}
+    $('endDay').textContent = 'The finale';
+    $('endTitle').textContent = 'Poppy\'s show';
+    $('endStamp').innerHTML = `<span class="stamp ${n === 4 ? 'ok big' : 'no'}">${n === 4 ? 'SHOW DOG!' : n + ' OF 4 TRICKS'}</span>`
+      + `<div class="tricklist">${res.map(r => `<div class="place ${r.learned ? 'ok' : 'no'}"><span>${LEVELS[r.key].name}</span><span>${r.learned ? '✓ learned' : '✗ not yet'}</span></div>`).join('')}</div>`;
+    $('endText').innerHTML = `<b>${closingLine(n)}</b>`;
+    $('endScore').innerHTML = `<div class="bigscore">${total}<small>points</small></div>`
+      + `<div class="best ${isBest && best ? 'new' : ''}">${isBest ? (best ? 'Your best training so far!' : 'Your first full training') : `Best so far: ${best}`}</div>`
+      + `<details><summary>Points per trick</summary><table class="score">${res.map((r, i) => `<tr><td>${STAGE[i]} · ${LEVELS[r.key].name}</td><td>${r.score}</td></tr>`).join('')}<tr><td>Applause in the show (${n})</td><td>+${n*50}</td></tr></table></details>`;
+    $('nextBtn').textContent = 'Start again from trick 1';
+    $('newRunBtn2').style.display = 'none';
+    ending.style.display = 'flex';
+    if (n === 4){ SFX.win(); confetti(160); }
+  }
+
+  // ---------- buttons ----------
+  const tap = (id, fn) => $(id).addEventListener('pointerdown', e => { e.preventDefault(); unlockAudio(); if (g) fn(); });
+  tap('yesBtn', () => reward(g));
+  tap('forceBtn', () => force(g));
+  tap('cueBtn', () => cue(g));
+  document.querySelectorAll('#showCtl button').forEach(b => b.addEventListener('pointerdown', e => {
+    e.preventDefault(); unlockAudio();
+    if (!g || !g.L.show || b.disabled) return;
+    if (command(g, b.dataset.t)){ b.disabled = true; say(`${SHOWWORD[b.dataset.t]}`); ahh(SHOWWORD[b.dataset.t], X0 - 150); }
+  }));
+  window.addEventListener('keydown', e => {
+    if (!g || gameEl.style.display === 'none' || paused()) return;
+    if (e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); unlockAudio(); reward(g); }
+    else if (e.key === 'd' || e.key === 'D'){ unlockAudio(); cue(g); }
+  });
+  function newRun(){ run = {results: []}; saveRun(); g = null; ending.style.display = 'none'; gameEl.style.display = 'none'; renderRun(); landing.style.display = 'flex'; }
+  $('nextBtn').addEventListener('click', () => {
+    const t = $('nextBtn').textContent;
+    if (t === 'Start again from trick 1') return newRun();
+    if (t === 'On to the show!') return startShow();
+    startStage(stageIndex + 1);
+  });
+  $('newRunBtn2').addEventListener('click', newRun);
+  let sure = false;
+  $('newRunBtn').addEventListener('click', () => {
+    if (!sure){ sure = true; $('newRunBtn').textContent = 'Sure? Tap again'; setTimeout(() => { sure = false; $('newRunBtn').textContent = 'Start again'; }, 2500); return; }
+    sure = false; $('newRunBtn').textContent = 'Start again'; newRun();
+  });
+  const openHelp = () => helpPanel.style.display = 'flex';
+  $('helpBtn1').addEventListener('click', openHelp);
+  $('helpBtn2').addEventListener('click', openHelp);
+  $('helpClose').addEventListener('click', () => { helpPanel.style.display = 'none'; last = 0; });
+  function soundLabel(){ $('soundBtn').textContent = 'Sound: ' + (sound ? 'on' : 'off'); }
+  soundLabel();
+  $('soundBtn').addEventListener('click', () => {
+    sound = !sound; try { localStorage.setItem('pt-sound', sound ? 'on' : 'off'); } catch(e){}
+    soundLabel(); unlockAudio(); if (sound) SFX.good();
+  });
+  let unlocked = false, silentEl = null;
+  function silentWavURL(){
+    // half a second of silence as a WAV file
+    const n = 11025, buf = new ArrayBuffer(44 + n*2), v = new DataView(buf);
+    const w = (o, str) => { for (let i = 0; i < str.length; i++) v.setUint8(o + i, str.charCodeAt(i)); };
+    w(0,'RIFF'); v.setUint32(4, 36 + n*2, true); w(8,'WAVE'); w(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+    v.setUint32(24,22050,true); v.setUint32(28,44100,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,'data'); v.setUint32(40,n*2,true);
+    return URL.createObjectURL(new Blob([buf], {type:'audio/wav'}));
+  }
+  function unlockAudio(){
+    // iPhones: play as media (ignores the silent switch), and only unlock inside a completed tap
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch(e){}
+    const a = actx(); if (!a) return;
+    if (a.state !== 'running') a.resume().catch(() => {});
+    if (!silentEl){
+      try { silentEl = new Audio(silentWavURL()); silentEl.loop = true; silentEl.setAttribute('playsinline', ''); silentEl.volume = 0.01; } catch(e){}
+    }
+    if (silentEl && silentEl.paused) silentEl.play().catch(() => {});
+    if (!unlocked){
+      try { const b = a.createBuffer(1, 1, 22050), src = a.createBufferSource(); src.buffer = b; src.connect(a.destination); src.start(0); } catch(e){}
+      unlocked = true;
+    }
+  }
+  ['pointerdown','touchend','click','keydown'].forEach(ev => document.addEventListener(ev, unlockAudio, true));
+  document.addEventListener('visibilitychange', () => { if (document.hidden && silentEl) silentEl.pause(); });
+
+
+  document.addEventListener('visibilitychange', () => { last = 0; });
+  window.__pt = () => g; // for testing
+  window.__ui = {banner, ahh, startStage, startShow, finish, showEnd};
+})();
+</script>
+</body>
+</html>
