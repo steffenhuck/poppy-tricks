@@ -412,7 +412,7 @@
       <li><b>Words come last.</b> Say "Down!" just as she lies down, then YES! Do it a few times and the word means something.</li>
       <li><b>The old way: push her into it.</b> She ends up sitting, but she learns nothing, and she trusts you a little less.</li>
     </ul>
-    <p class="small">Each well-timed YES! for the trick fills a paw at the top. Fill them all and she's learned it. Treats are limited, and so is time: about two minutes per trick. If she hasn't learned the trick when the treats or the time run out, it's <b>game over</b>, and you start again from trick 1. Only the last trick, rolling over, is forgiven: the show goes on without it.</p>
+    <p class="small">Each well-timed YES! for the trick fills a paw at the top. Fill them all and she's learned it. Treats are limited, and so is time: under a minute for the first trick, a bit more for each one after. If she hasn't learned the trick when the treats or the time run out, it's <b>game over</b>, and you start again from trick 1. Only the last trick, rolling over, is forgiven: the show goes on without it.</p>
     <button class="btn" id="helpClose">Got it</button>
   </div>
 </div>
@@ -485,17 +485,17 @@ const DUR = {idle:1, sniff:2.0, sit:2.3, paw:1.6, spin:1.6, bark:1.5, jump:1.3, 
 const LATE = 0.6;          // seconds after a behaviour ends that a treat still (half) counts
 const FLOOR = 0.6;         // weights never decay below this
 const LEVELS = {
-  sit:  {key:'sit',  name:'Sit',      target:'sit',  need:4, treats:12, time:90,  cloud:'full', steps:[],              force:'Push her bum down', forcePose:'sit'},
-  paw:  {key:'paw',  name:'Give paw', target:'paw',  need:4, treats:14, time:110, cloud:'full', steps:['sit'],         force:'Grab her paw',      forcePose:'paw'},
-  down: {key:'down', name:'Down',     target:'down', need:4, cue:3, treats:16, time:110, cloud:'top', steps:[],      force:'Push her down',     forcePose:'down'},
-  roll: {key:'roll', name:'Roll over',target:'roll', need:2, treats:22, time:120, cloud:'none', steps:['down','side'], force:'Roll her over',  forcePose:'roll'},
+  sit:  {key:'sit',  name:'Sit',      target:'sit',  need:3, treats:10, time:45,  cloud:'full', steps:[],              force:'Push her bum down', forcePose:'sit'},
+  paw:  {key:'paw',  name:'Give paw', target:'paw',  need:3, treats:11, time:55, cloud:'full', steps:['sit'],         force:'Grab her paw',      forcePose:'paw'},
+  down: {key:'down', name:'Down',     target:'down', need:3, cue:2, treats:12, time:65, cloud:'top', steps:[],      force:'Push her down',     forcePose:'down'},
+  roll: {key:'roll', name:'Roll over',target:'roll', need:2, treats:18, time:90, cloud:'none', steps:['down','side'], force:'Roll her over',  forcePose:'roll'},
   show: {key:'show', name:'The show', show:true, treats:0, time:9999, cloud:'none', steps:[]}
 };
 const LEVEL_ORDER = ['sit','paw','down','roll'];
 
 function mulberry(seed){ let a = seed >>> 0; return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
-function startW(){ return {sniff:2.2, sit:1.4, spin:1.0, bark:1.0, jump:1.1, down:0.9}; }
+function startW(){ return {sniff:1.8, sit:2.0, spin:1.0, bark:1.0, jump:1.0, down:1.0}; }
 
 function makeGame(key, seed, carry){
   carry = carry || {};
@@ -503,9 +503,9 @@ function makeGame(key, seed, carry){
   const g = {
     key, L, rand: mulberry(seed || 1), t: 0, over: false, won: false, learned: false, why: '',
     w: carry.w ? Object.assign({}, carry.w) : startW(),
-    pPaw: carry.pPaw != null ? carry.pPaw : 0.2,
-    pSide: carry.pSide != null ? carry.pSide : 0.35,
-    pRoll: carry.pRoll != null ? carry.pRoll : 0.1,
+    pPaw: carry.pPaw != null ? carry.pPaw : 0.3,
+    pSide: carry.pSide != null ? carry.pSide : 0.45,
+    pRoll: carry.pRoll != null ? carry.pRoll : 0.15,
     trust: carry.trust != null ? carry.trust : 3,
     known: Object.assign({}, carry.known || {}),     // tricks learned in earlier stages (for the show)
     treats: L.treats, paws: 0, assoc: 0,
@@ -517,7 +517,7 @@ function makeGame(key, seed, carry){
   };
   // a new trick, a new session: she still offers its first step now and then
   const first = {sit: 'sit', paw: 'sit', down: 'down', roll: 'down'}[key];
-  if (first) g.w[first] = Math.max(g.w[first], 1.4);
+  if (first) g.w[first] = Math.max(g.w[first], 2.0);
   return g;
 }
 
@@ -542,7 +542,7 @@ function setCur(g, b, dur){
 function gap(g){ return (0.35 + g.rand()*0.6) * (1 + (3 - g.trust)*0.6); }
 function chooseBase(g){
   const w = Object.assign({}, g.w);
-  if (g.recent){ w[g.recent] += 3; g.recent = null; }
+  if (g.recent){ w[g.recent] += 4; g.recent = null; }
   let s = 0; for (const b of BASE) s += w[b];
   let r = g.rand()*s;
   for (const b of BASE){ r -= w[b]; if (r <= 0) return b; }
@@ -556,10 +556,10 @@ function endBehaviour(g){
       if (BASE.includes(b)) g.w[b] = Math.max(FLOOR, g.w[b]*0.95);
       // she knows lying on her side pays; now it doesn't. She tries harder.
       if (b === 'side' && g.sideRewarded >= 2 && g.L.key === 'roll' && !g.learned){
-        g.pRoll = Math.min(0.75, g.pRoll + 0.2); g.stats.burst++; g.events.push({type: 'burst', b});
+        g.pRoll = Math.min(0.8, g.pRoll + 0.28); g.stats.burst++; g.events.push({type: 'burst', b});
       }
       if (b === 'sit' && g.w.sit >= 2.5 && g.L.key === 'paw' && !g.learned){
-        g.pPaw = Math.min(0.7, g.pPaw + 0.07); g.stats.burst++; g.events.push({type: 'burst', b});
+        g.pPaw = Math.min(0.75, g.pPaw + 0.1); g.stats.burst++; g.events.push({type: 'burst', b});
       }
     }
     g.prev = {b, end: g.t, rewarded: c.rewarded, cued: b === 'down' ? g.cuedThis : false, demo: c.demo};
@@ -627,8 +627,8 @@ function reward(g){
   const ev = {type: 'reward', q, b, target: b === g.L.target, step: g.L.steps.includes(b)};
   if (b){
     const a = q === 'perfect' ? 1 : 0.5;
-    if (BASE.includes(b)){ g.w[b] += 1.2*a; g.recent = b; }
-    if (b === 'paw'){ g.pPaw = Math.min(0.85, g.pPaw + 0.15*a); g.w.sit += 0.3*a; g.recent = 'sit'; }
+    if (BASE.includes(b)){ g.w[b] += 1.7*a; g.recent = b; }
+    if (b === 'paw'){ g.pPaw = Math.min(0.85, g.pPaw + 0.2*a); g.w.sit += 0.3*a; g.recent = 'sit'; }
     if (b === 'side'){ g.pSide = Math.min(0.85, g.pSide + 0.15*a); g.w.down += 0.3*a; g.recent = 'down'; g.sideRewarded++; }
     if (b === 'roll'){ g.pRoll = Math.min(0.85, g.pRoll + 0.2*a); g.pSide = Math.min(0.85, g.pSide + 0.05); g.w.down += 0.3*a; g.recent = 'down'; }
     if (b === 'down' && g.L.key === 'roll'){ g.pSide = Math.min(0.85, g.pSide + 0.03*a); }
@@ -643,7 +643,7 @@ function reward(g){
   g.events.push(ev);
   setCur(g, 'eat');
   if (b && ev.target && g.paws >= g.L.need && (!g.L.cue || g.assoc >= g.L.cue)){
-    g.learned = true; g.demo = 2; g.known[g.L.target] = true;
+    g.learned = true; g.demo = 1; g.known[g.L.target] = true;
     g.stats.learnedAt = g.t;
     g.events.push({type: 'learned'});
   }
