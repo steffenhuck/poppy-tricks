@@ -1268,8 +1268,10 @@ function carryOut(g){
   const STAMP_NO = {sit: 'NO SIT YET', paw: 'NO PAW YET', down: 'NO DOWN YET', roll: 'NO ROLL YET'};
   const SHOWWORD = {sit: '"Sit!"', paw: '"Paw!"', down: '"Down!"', roll: '"Roll over!"'};
   let run = {results: []};
-  try { const r = JSON.parse(localStorage.getItem('pt-run-v1') || 'null'); if (r && Array.isArray(r.results)) run = r; } catch(e){}
-  function saveRun(){ try { localStorage.setItem('pt-run-v1', JSON.stringify(run)); } catch(e){} }
+  // progress lives only for this visit: a reload starts fresh. Only best scores are kept.
+  try { localStorage.removeItem('pt-run-v1'); } catch(e){}
+  function saveRun(){}
+  function bestShow(){ try { return JSON.parse(localStorage.getItem('pt-best-show') || 'null'); } catch(e){ return null; } }
   function runTotal(){ return run.results.reduce((a, r) => a + r.score, 0); }
 
   function renderRun(){
@@ -1285,7 +1287,9 @@ function carryOut(g){
     h += `<button class="lvl k-show ${n === 4 ? 'next' : 'locked'}" data-i="4"><span class="badge">★</span><span><span class="day">The finale</span><span class="name">Poppy's show</span><span class="what">${n === 4 ? 'An audience! Call each trick and see what she does.' : '🔒 After all four tricks.'}</span></span></button>`;
     $('stageCards').innerHTML = h;
     $('stageCards').querySelectorAll('.lvl.next').forEach(b => b.addEventListener('click', () => { unlockAudio(); const i = +b.dataset.i; if (i === 4) startShow(); else startStage(i); }));
-    $('runBtns').innerHTML = n > 0 ? `<div><button class="btn secondary small" id="newRun0">Start again from trick 1</button></div>` : '';
+    const bs = bestShow();
+    $('runBtns').innerHTML = (bs ? `<p class="best">Your best show: ${bs.score} points, ${bs.n} of 4 tricks</p>` : '')
+      + (n > 0 ? `<div><button class="btn secondary small" id="newRun0">Start again from trick 1</button></div>` : '');
     if ($('newRun0')) $('newRun0').addEventListener('click', () => { run = {results: []}; saveRun(); renderRun(); });
   }
   renderRun();
@@ -1395,7 +1399,7 @@ function carryOut(g){
   function showEnd(){
     const res = run.results, n = res.filter(r => r.learned).length, total = runTotal() + n*50;
     let best = 0; try { best = +localStorage.getItem('pt-best-run') || 0; } catch(e){}
-    const isBest = total > best; if (isBest) try { localStorage.setItem('pt-best-run', String(total)); } catch(e){}
+    const isBest = total > best; if (isBest) try { localStorage.setItem('pt-best-run', String(total)); localStorage.setItem('pt-best-show', JSON.stringify({score: total, n})); } catch(e){}
     $('endDay').textContent = 'The finale';
     $('endTitle').textContent = 'Poppy\'s show';
     $('endStamp').innerHTML = `<span class="stamp ${n === 4 ? 'ok big' : 'no'}">${n === 4 ? 'SHOW DOG!' : n + ' OF 4 TRICKS'}</span>`
