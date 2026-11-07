@@ -291,6 +291,9 @@
   #timebar{width:100%; height:10px; margin-top:8px; background:#fff; border-radius:999px; box-shadow:0 3px 10px rgba(100,80,60,.1); overflow:hidden;}
   #timeFill{display:block; height:100%; width:100%; background:linear-gradient(90deg,#ffcf3f,#ff8a2e); border-radius:999px; transition:width .25s linear;}
   #treatChip svg{width:30px; height:20px;}
+  .chips{display:flex; gap:6px;}
+  #clockChip{font-variant-numeric:tabular-nums; min-width:68px; justify-content:center;}
+  #clockChip.low{color:#c8312a; animation:throb .5s ease-in-out infinite alternate;}
   #treatChip.low{color:#c8312a; animation:throb .5s ease-in-out infinite alternate;}
   #trustTag{font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; color:#fff; background:#c8312a; padding:4px 10px; border-radius:999px; white-space:nowrap;}
   #controls .ctl{min-height:92px; justify-content:center;}
@@ -384,7 +387,7 @@
     <p>That's your moment: press <b>YES!</b> She gets a treat, and she'll do it more often. Her <b>thought cloud</b> shows what's on her mind: the bigger the word, the more likely she does it next.</p>
 
     <h2 style="font-size:22px;margin:16px 0 0">Poppy's tricks</h2>
-    <p class="small" style="margin-top:2px">Four tricks, in order, then a show. What she learns, and every bad habit you teach her, comes with her.</p>
+    <p class="small" style="margin-top:2px">Four tricks, in order, then a show. Every bad habit you teach her comes with her. Run out of treats or time before she learns a trick, and it's game over.</p>
     <div class="levels" id="stageCards"></div>
     <div id="runBtns"></div>
     <button class="btn secondary small" id="helpBtn1">How puppies learn tricks</button>
@@ -409,7 +412,7 @@
       <li><b>Words come last.</b> Say "Down!" just as she lies down, then YES! Do it a few times and the word means something.</li>
       <li><b>The old way: push her into it.</b> She ends up sitting, but she learns nothing, and she trusts you a little less.</li>
     </ul>
-    <p class="small">Each well-timed YES! for the trick fills a paw at the top. Fill them all and she's learned it. Treats are limited, and so is time: about two minutes per trick.</p>
+    <p class="small">Each well-timed YES! for the trick fills a paw at the top. Fill them all and she's learned it. Treats are limited, and so is time: about two minutes per trick. If she hasn't learned the trick when the treats or the time run out, it's <b>game over</b>, and you start again from trick 1. Only the last trick, rolling over, is forgiven: the show goes on without it.</p>
     <button class="btn" id="helpClose">Got it</button>
   </div>
 </div>
@@ -432,7 +435,7 @@
 <div id="game">
   <div id="top">
     <div class="title">Poppy's First Tricks<small id="levelName">Trick 1 · Sit</small></div>
-    <div class="chip" id="treatChip"><svg viewBox="10 0 80 72"><use href="#bone"/></svg><span id="treatN">12</span></div>
+    <div class="chips"><div class="chip" id="clockChip">⏱ <span id="clockN">90</span></div><div class="chip" id="treatChip"><svg viewBox="10 0 80 72"><use href="#bone"/></svg><span id="treatN">12</span></div></div>
   </div>
   <div id="progressWrap">
     <span class="lab" id="pawLab">Sit</span>
@@ -484,7 +487,7 @@ const FLOOR = 0.6;         // weights never decay below this
 const LEVELS = {
   sit:  {key:'sit',  name:'Sit',      target:'sit',  need:4, treats:12, time:90,  cloud:'full', steps:[],              force:'Push her bum down', forcePose:'sit'},
   paw:  {key:'paw',  name:'Give paw', target:'paw',  need:4, treats:14, time:110, cloud:'full', steps:['sit'],         force:'Grab her paw',      forcePose:'paw'},
-  down: {key:'down', name:'Down!',    target:'down', need:4, cue:3, treats:16, time:110, cloud:'top', steps:[],      force:'Push her down',     forcePose:'down'},
+  down: {key:'down', name:'Down',     target:'down', need:4, cue:3, treats:16, time:110, cloud:'top', steps:[],      force:'Push her down',     forcePose:'down'},
   roll: {key:'roll', name:'Roll over',target:'roll', need:2, treats:22, time:120, cloud:'none', steps:['down','side'], force:'Roll her over',  forcePose:'roll'},
   show: {key:'show', name:'The show', show:true, treats:0, time:9999, cloud:'none', steps:[]}
 };
@@ -1058,6 +1061,7 @@ function carryOut(g){
     $('progressWrap').style.display = show ? 'none' : '';
     $('timebar').style.display = show ? 'none' : '';
     $('treatChip').style.display = show ? 'none' : '';
+    $('clockChip').style.display = show ? 'none' : '';
   }
   function lightRow(els, n){
     for (let i = 0; i < els.length; i++){
@@ -1073,6 +1077,9 @@ function carryOut(g){
     if (g.L.cue) lightRow($('cues').children, g.assoc);
     $('treatN').textContent = g.treats;
     $('treatChip').classList.toggle('low', g.treats <= 3 && !g.learned);
+    const left = Math.max(0, Math.ceil(g.L.time - g.t));
+    $('clockN').textContent = g.learned ? '✓' : left;
+    $('clockChip').classList.toggle('low', !g.learned && left <= 15);
     $('trustTag').style.display = g.trust < 2 ? '' : 'none';
     $('timeFill').style.width = (g.learned ? 100 : Math.max(0, 100*(1 - g.t/g.L.time))) + '%';
     // first stage: the YES! button pulses while she sits, the first few times
@@ -1331,6 +1338,7 @@ function carryOut(g){
   function finish(){
     if (!g || g.L.show) return;
     const key = g.key, sc = stageScore(g), learned = g.learned;
+    if (!learned && stageIndex < 3) return gameOver(sc);
     run.results[stageIndex] = {key, learned, score: sc.total, carry: carryOut(g)};
     run.results.length = stageIndex + 1; saveRun();
     $('endDay').textContent = STAGE[stageIndex] + ' · ' + g.L.name;
@@ -1339,7 +1347,7 @@ function carryOut(g){
     $('endStamp').innerHTML = `<span class="stamp ${learned ? 'ok' : 'no'} ${learned && key === 'roll' ? 'big' : ''}">${learned ? STAMP_OK[key] : STAMP_NO[key]}</span>`;
     const s = g.stats;
     let txt = learned ? `She learned it in <b>${Math.round(s.learnedAt)} seconds</b>, with <b>${g.treats}</b> treat${g.treats === 1 ? '' : 's'} to spare.`
-      : `Poppy got <b>${g.paws} of ${g.L.need}</b> paws${g.L.cue ? ` and <b>${g.assoc} of ${g.L.cue}</b> "Down!"s` : ''}. ` + (stageIndex < 3 ? 'She\'ll bring what she did learn to the next trick.' : 'That was the last trick before the show.');
+      : `Poppy got <b>${g.paws} of ${g.L.need}</b> paws${g.L.cue ? ` and <b>${g.assoc} of ${g.L.cue}</b> "Down!"s` : ''}. ` + 'That was the hardest one. The show goes on without it.';
     const top = topHabit(g, null);
     if (s.wrong >= 2 && top !== g.L.target && top !== 'sniff') txt += ` <i>And she's now really into <b>${NAME[top]}</b>.</i>`;
     if (s.force) txt += ` <i>You pushed her ${s.force} time${s.force > 1 ? 's' : ''}. ${learned ? 'She learned anyway, but not from that.' : 'That teaches nothing.'}</i>`;
@@ -1353,6 +1361,28 @@ function carryOut(g){
     $('newRunBtn2').style.display = '';
     $('nextBtn').textContent = stageIndex < 3 ? `On to trick ${stageIndex + 2}: ${LEVELS[ORDER[stageIndex + 1]].name}` : 'On to the show!';
     if (learned){ SFX.win(); confetti(key === 'roll' ? 150 : 80); }
+    ending.style.display = 'flex';
+  }
+  function gameOver(sc){
+    const s = g.stats, key = g.key;
+    run = {results: []}; saveRun();
+    $('endDay').textContent = STAGE[stageIndex] + ' · ' + g.L.name;
+    $('endTitle').textContent = 'Game over';
+    $('endStamp').innerHTML = `<span class="stamp no big">${STAMP_NO[key]}</span>`;
+    let why = g.why === 'treats' ? '<b>Out of treats.</b>' : '<b>Out of time.</b>';
+    if (g.trust < 1.5) why += ' And <b>she\'s wary of you</b>: you pushed her around, so she hardly offered anything.';
+    let txt = `${why} Poppy got <b>${g.paws} of ${g.L.need}</b> paws${g.L.cue ? ` and <b>${g.assoc} of ${g.L.cue}</b> "Down!"s` : ''}.`;
+    const wasted = s.wrong + s.confused + s.late;
+    if (wasted) txt += ` <b>${wasted}</b> treat${wasted > 1 ? 's' : ''} went to the wrong thing, or came too late.`;
+    const top = topHabit(g, null);
+    if (s.wrong >= 2 && top !== g.L.target && top !== 'sniff') txt += ` <i>She's now really into <b>${NAME[top]}</b>.</i>`;
+    txt += ` <i>${key === 'sit' ? 'Without a sit, there\'s no paw.' : key === 'paw' ? 'Without the paw, there\'s no show.' : 'Without lying down, there\'s no rolling over.'} Start again from trick 1.</i>`;
+    $('endText').innerHTML = txt;
+    $('endScore').innerHTML = `<div class="bigscore">${sc.total}<small>points</small></div>`
+      + `<details><summary>How the score was made</summary><table class="score">${sc.lines.map(([k, v]) => `<tr class="${v < 0 ? 'neg' : ''}"><td>${k}</td><td>${v > 0 ? '+' : ''}${v}</td></tr>`).join('')}</table></details>`;
+    $('newRunBtn2').style.display = 'none';
+    $('nextBtn').textContent = 'Start again from trick 1';
+    SFX.bad();
     ending.style.display = 'flex';
   }
   function closingLine(n){
