@@ -1450,12 +1450,13 @@ function carryOut(g){
   soundLabel();
   $('soundBtn').addEventListener('click', () => {
     sound = !sound; try { localStorage.setItem('pt-sound', sound ? 'on' : 'off'); } catch(e){}
+    if (!sound){ if (silentEl) silentEl.pause(); if (ac) ac.suspend().catch(() => {}); }
     soundLabel(); unlockAudio(); if (sound) SFX.good();
   });
   let unlocked = false, silentEl = null;
   function silentWavURL(){
-    // half a second of silence as a WAV file
-    const n = 11025, buf = new ArrayBuffer(44 + n*2), v = new DataView(buf);
+    // four seconds of silence as a WAV file (long loops, fewer loop boundaries)
+    const n = 22050*4, buf = new ArrayBuffer(44 + n*2), v = new DataView(buf);
     const w = (o, str) => { for (let i = 0; i < str.length; i++) v.setUint8(o + i, str.charCodeAt(i)); };
     w(0,'RIFF'); v.setUint32(4, 36 + n*2, true); w(8,'WAVE'); w(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
     v.setUint32(24,22050,true); v.setUint32(28,44100,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,'data'); v.setUint32(40,n*2,true);
@@ -1464,6 +1465,8 @@ function carryOut(g){
   function unlockAudio(){
     // iPhones: play as media (ignores the silent switch), and only unlock inside a completed tap
     try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch(e){}
+    // sound off: keep everything silent, including the iPhone keep-alive clip
+    if (!sound){ if (silentEl) silentEl.pause(); if (ac && ac.state === 'running') ac.suspend().catch(() => {}); return; }
     const a = actx(); if (!a) return;
     if (a.state !== 'running') a.resume().catch(() => {});
     if (!silentEl){
@@ -1481,6 +1484,7 @@ function carryOut(g){
 
   document.addEventListener('visibilitychange', () => { last = 0; });
   window.__pt = () => g; // for testing
+  window.__audio = () => ac ? ac.state : 'none';
   window.__ui = {banner, ahh, startStage, startShow, finish, showEnd};
 })();
 </script>
